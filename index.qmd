@@ -1,0 +1,13 @@
+# Preface {.unnumbered}
+
+This is a short book about Hidden Markov Models, their principles, and how they can be fitted and applied in practical cases.
+
+It is organised in 4 chapters:
+
+1.  The **introduction** explains the principle of Hidden Markov Models through a simple probabilistic model involving boxes and balls.
+
+2.  The **fitting** part explains how a Hidden Markov Model is fit to an observed series of data to estimate its parameters.
+
+3.  The **hidden states** part explains how Hidden Markov Model are used to predict the hidden states behind a series of observations.
+
+4.  The **case studies** part shows how Hidden Markov Models can be used in two instances: one is the interpretation of geomorphic series along a river, the second is the interpretation of discursive content.

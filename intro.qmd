@@ -1,0 +1,162 @@
+# Introduction
+
+## A generic example of HMM: the bags and balls' colors series
+
+![An example of Hidden Markov Model with two states (bag A and bag B) and two outcomes (red ball -R- or white ball -W).](img/operator_and_states.png)
+
+Let's consider the following example (which we will refer to as the **bags and balls's colors example*}** throughout this tutorial).
+
+An operator has two bags, A et B, filled with either red or white balls in different proportions. He carries out the following experiment:
+
+- He chooses one bag out of the two
+- He draws a ball out the bag he has just chosen, writes down its color on a sheet of paper, and then puts it back in the bag
+- He chooses to keep that same bag or to take the other one
+- He draws a ball out of the bag, writes down its color on the sheet of paper, and then puts it back in the bag
+- He chooses to keep that same bag or to take the other one,
+- etc.
+
+He thus repeats the same process "drawing of ball, choosing of bag" $n$ times. Then we are given the sheet of paper with the succession of colors written on it... We thus **know the sequence of colors (the observations)** but we **do not know the sequence of bags (the hidden states)**. A possible series of hidden states and observations is shown in figure @fig-series.
+
+We suppose that at any iteration $k$, the operator chooses to keep the same bag or to change it only based on a constant rule which depends on the bag he had during iteration $k-1$.
+
+That is to say that the hidden state variable has the **Markov property**: its probability distribution at iteration $k$ depends only on its value at iteration $(k_1)$, but is independent of all previous iterations (hence $pr(S_k/S_{k-1})$ is independent of $S_1,S_2,...S_{k-2}$). It also means that $pr(S_k/S_{k-1})$ is independent of $k$.
+
+![An example of hidden states and observations series](img/hiddenstates_and_observations_series.png){#fig-series}
+
+## Notations associated with a HMM
+
+Finally we know the series $X=(X_1,X_2,X_3,...,X_n)$ which corresponds, in the bags and balls' colors example, to the **balls' colors** (i.e. the **observations** series). The two possible **outcomes** are "red"  (R) or "white" (W). On the other hand, we do not know the series $S=(S_1,S_2,S_3,...S_n)$ which corresponds to the **names of the bags** out of which the balls have been drawn (i.e. the **hidden states** series)
+
+Here, the possible hidden states are either $S_k=A$ ou $S_k=B$ and the possible outcomes are either $X_k=R$ ou $X_k=W$.
+
+### Transition probabilities
+
+Let's consider the following notations:
+
+For all iterations (i.e. for all values of $k$), the probabilities of a **transition from a hidden state to another} are:
+
+- $p_{AB}=pr(S_k=B/S_{k-1}=A)$ is the probability that the operator changes from bag A to bag B
+- $p_{AA}=pr(S_k=A/S_{k-1}=A)$ is the probability that the operator keeps bag A
+- $p_{BA}=pr(S_k=A/S_{k-1}=B)$ is the probability that the operator changes from bag B to bag A
+- $p_{BB}=pr(S_k=B/S_{k-1}=B)$ is the probability that the operator keeps bag B
+
+Based on these notations we can define the **transition matrix** (transition from a state to another) as:
+
+|     |    A   |    B  |
+|:---:|:------:|:------:|
+|  A  |$p_{AA}$|$p_{AB}$|
+|  B  |$p_{BA}$|$p_{BB}$|
+
+**Generalization**
+
+Let $S_k$ be a discrete hidden random variable with sample space (i.e. set of all $n_S$ possible outcomes) $\Omega_S$.
+
+The probability of a state $j$ at time $k$ given the state was $i$ at time $k-1$ is given by matrix:
+
+$$
+T=\{t_{ij}\}_{(i,j)\in \Omega_S^2}=pr(S_k=j|S_{k-1}=i)
+$$
+
+### Emission probabilities
+
+For all iterations (i.e. for all values of $k$), the probabilities of the **outcomes conditional on hidden state} are:
+
+- $p_{AW}=pr(X_k=W/S_k=A)$ is the probability of drawing a white ball from bag A
+- $p_{AR}=pr(X_k=R/S_k=A)$ is the probability of drawing a red ball from bag A
+- $p_{BW}=pr(X_k=W/S_k=B)$ is the probability of drawing a white ball from bag B
+- $p_{BR}=pr(X_k=R/S_k=B)$ is the probability of drawing a red ball from bag B
+
+Based on these notations we can define the **emission matrix** (emission of an outcome from a state) as:
+
+
+|     |    W   |    R   |
+|:---:|:------:|:------:|
+|  A  |$p_{AW}$|$p_{AR}$|
+|  B  |$p_{BW}$|$p_{BR}$|
+
+**Generalization
+
+Let $X_k$ be a discrete observed random variable with sample space (i.e. set of all $n_X$ possible outcomes) $\Omega_X$.
+
+The probability of a certain outcome $l$ at time $k$ given the state at that same time is $i$ is given by matrix:
+
+$$
+E=\{e_{il}\}_{(i,l)\in \Omega_S\times\Omega_X}=pr(X_k=l|S_k=i)
+$$
+
+### Initial state distribution
+
+The initial state distribution (i.e. probabilities of being in state i when $k=1$) is given by
+
+$$
+\pi_i=pr(S_1 = i).
+$$
+
+We use the notation $\pi=(\pi_1,\pi_2,...\pi_{n_X})$
+
+### Parameters of a HMM
+
+Finally, a hidden Markov model can be fully described by the set of parameters $\theta = (T,E,\pi)$ where
+
+- $T$ corresponds to the transition probabilities,
+- $E$ corresponds to the emission probabilities, 
+- $\pi$ to the initial state probabilities.
+
+## Questions associated to a HMM
+
+A HMM user typically searches answers to the following questions:
+
+- What are the characteristics of states, which optimally describe the series of observations? 
+- What is the most probable series of hidden states considering the series of observations?
+
+Answering the first question consists in fitting the model, i.e. estimating its parameters (emission and transition probabilities). This will be the focus of section \ref{baumwelch}.
+
+Answering the second one consists in calculating the most likely series of hidden states (based on both observation series and fitted model). This will be the focus of section \ref{viterbi}.
+
+## A practical example: the wood occurrence series
+
+Let's consider a spatial series consisting of occurrence of wood rafts along a river. Each data sample corresponds to a 500 meters-long section of the river.
+
+```{r show_wood}
+wood<- read.csv("data/wood.csv", sep=";", header=T)
+attach(wood)
+print(wood[1:10,])
+```
+
+In the script `tools_cat_series` you will find some R functions helping with the graphical representation of categorical series. 
+
+```{r wood, fig.width=12, fig.height=4}
+#| fig-cap: "An example of observation series: occurrence of wood  500 meter-long sections of the river." 
+source("scripts/tools_cat_series.R")
+col_outcomes=c("slateblue4","burlywood3")
+plot_cat_series(obsWood,x=PK,col=col_outcomes)
+```
+
+We want to characterize the fact that the **occurrence of wood ("wood" outcome vs "nothing" outcome)** is more or less frequent according to an unobserved characteristic of the river. Hence we consider the river is either in a state we define as:
+
+- **"State 1: High frequency of wood occurrence" (H)** or 
+- **"State 2: Low frequency of wood occurrence" (L)**.
+
+
+Over the whole series of observations :
+
+```{r table_obswood}
+print(table(obsWood))
+pw=table(obsWood)[2]/length(obsWood)
+print(pw)
+```
+
+We have `r round(pw*100,2)`% chances of observing the "wood" outcome on a single point.
+
+```{r prop_wood, fig.width=8,fig.height=4, echo=FALSE}
+#| fig-cap: "Frequency of wood occurrence along the river (20 equal-sized sections). The horizontal dotted lines correspond to the quantiles of order 2.5% and 97.5% of the observed proportion under the hypothesis of a contant value $\\pi_w$ along the river."
+#| label: fig-prop_wood
+facx=cut(PK, 20, labels=1:20) 
+table_20sections=table(facx,obsWood)
+plot(table_20sections, col=col_outcomes, xlab="")
+# 2.5% and 97.5% quantiles
+lim=qbinom(c(0.025,0.975),size=100,prob=pw)/100
+abline(h=lim,lty=2, lwd=2)
+```
+
+Cutting the river into (for instance) 20 equal-sized sections, we observe that the frequency of "wood" outcome seems to vary along the river (cf fig. @fig-prop_wood). If obsWood followed a constant binomial distribution (with a proportion of "wood" outcome $\pi_w=$ `r round(pw*100,2)`%) all along the river, then we would have a 95% probability of observing proportions of "wood" outcome between `r lim[1]*100`% and `r lim[2]*100`%.

@@ -1,0 +1,376 @@
+# Case studies
+
+```{r, echo=FALSE}
+library(HMM)
+wood<- read.csv("data/wood.csv", sep=";", header=T)
+attach(wood)
+
+pw=length(which(wood$obsWood=="wood"))/length(wood$obsWood)
+obsWood=wood$obsWood
+
+col_states=c("burlywood1","slateblue")
+col_outcomes=c("slateblue4","burlywood3")
+
+M_LTP=matrix(c(.9,.1,.1,.9),2)
+rownames(M_LTP)=c("L","H")
+colnames(M_LTP)=c("L","H")
+M_UCS=matrix(c(1-(pw-0.05),1-(pw+0.05),pw-0.05,(pw+0.05)),2)
+rownames(M_UCS)=c("L","H")
+colnames(M_UCS)=c("nothing","wood")
+M_CS=matrix(c(1-(pw-0.40),1-(pw+0.40),pw-0.40,(pw+0.40)),2)
+rownames(M_CS)=c("L","H")
+colnames(M_CS)=c("nothing","wood")
+M_HTP=matrix(c(.5,.5,.5,.5),2)
+rownames(M_HTP)=c("L","H")
+colnames(M_HTP)=c("L","H")
+
+source("scripts/tools_cat_series.R")
+
+# FIRST CASE: starting from M_LTP and M_UCS
+hmm_init_LTP_UCS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_LTP,
+                   emissionProbs=M_UCS)
+# SECOND CASE: starting from M_LTP and M_CS
+hmm_init_LTP_CS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_LTP,
+                   emissionProbs=M_CS)
+# THIRD CASE: starting from M_HTP and M_UCS
+hmm_init_HTP_UCS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_HTP,
+                   emissionProbs=M_UCS)
+# FOURTH CASE: starting from M_HTP and M_CS
+hmm_init_HTP_CS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_HTP,
+                   emissionProbs=M_CS)
+
+
+list_hmm_init=list(hmm_init_LTP_UCS,
+                   hmm_init_LTP_CS,
+                   hmm_init_HTP_UCS,
+                   hmm_init_HTP_CS)
+
+
+```
+
+## River geomorphology example
+
+### Description of the dataset
+
+Let's consider a qualitative geomorphological descriptor a river. This indicator has been built through a hierarchical clustering analysis based on several quantitative variables, namely:
+
+-   **f.slope**: log(slope)
+-   **f.sinuosity**: log(sinuosity -1)
+-   **f.vall_bott_W**: log(valley bottom width)
+-   **f.wat_cov**: logit(area under water divided by area of the active channel)
+-   **f.act_chan_cov**: log(area of the active channel divided by catchment area)
+-   **f.act_chan_vW**: log(interquartile range of active channel width)
+
+The individuals are homogeneous reaches of average length 1.7km.
+
+```{r}
+data_river <- read.csv("data/data_river.csv", sep=";")
+attach(data_river)
+x=1:nrow(data_river)
+require(ade4)
+data=data_river[,2:ncol(data_river)]
+datascaled=scale(data,center=TRUE)
+#boxplot(datascaled)
+monACP=dudi.pca(data,scannf=FALSE,nf=2)
+
+tree=hclust(dist(datascaled), method="ward")
+lcol2=c("darkorchid","palegreen")
+lcol5=c("slateblue2","maroon1",
+       "gold1","darkolivegreen1",
+       "mediumaquamarine")
+#plot(tree)grouping5=as.factor(cutree(tree,k=5))
+
+grouping5=as.factor(cutree(tree,k=5))
+grouping2=as.factor(cutree(tree,k=2))
+
+series5=paste0("class",grouping5)
+series2=paste0("class",grouping2)
+```
+
+```{r classesdescription, echo=FALSE, echo=FALSE, width=8, height=6}
+#| label: fig-classesdescription
+#| fig-cap: "Description of classes. A Principal Component Analysis has been performed to help with the description."
+layout(matrix(c(rep(1,6),2:7),byrow=TRUE,nrow=2), heights=c(2,1))
+par(mar=c(0,0,2,0), cex.main=1.2)
+s.class(monACP$li,grouping5,col=lcol5)
+arrows(x0=rep(0,nrow(monACP$co)),
+       y0=rep(0,nrow(monACP$co)),
+       x1=3*monACP$co[,1],
+       y1=3*monACP$co[,2],
+       length=0.1, col="darkgrey"
+       )
+text(x=3*monACP$co[,1],
+     y=3*monACP$co[,2],
+     rownames(monACP$co),cex=1.3)
+for (i in 1:6){
+  boxplot(datascaled[,i]~grouping5,col=lcol5, 
+          main=colnames(datascaled)[i],
+          xaxt="n", yaxt="n")
+}
+```
+
+Figure @fig-classesdescription shows the quantitative geomorphological features of the 5 classes defined through hierarchical clustering.
+
+```{r seqclasses, echo=FALSE, echo=FALSE, fig.width=12, fig.height=3}
+#| fig-cap: "Description of classes"
+#| label: fig-seqclasses
+plot_cat_series(series5,x,col=lcol5,
+                main="observation series (5 clusters)")
+```
+
+Figure @fig-seqclasses displays the sequence of classes along the river.
+
+### Fit of a HMM
+
+We hypothesize that there are actually two hidden states (let's call them "A" and "B") behind the observed sequence of series). The proportions of classes in the observation series is:
+
+```{r}
+myprop=round(table(series5)/length(series5),2)
+print(myprop)
+myprop=as.vector(myprop)
+```
+
+We initialize the emission matrix and transition matrix:
+
+```{r ex1_M_E}
+M_E=matrix(c(myprop[1]+0.05,myprop[1]-0.05,
+             myprop[2]-0.05,myprop[2]+0.05,
+             myprop[3]+0.05,myprop[3]-0.05,
+             myprop[4]-0.05,myprop[4]+0.05,
+             myprop[5]+0.05,myprop[5]-0.05),nrow=2)
+rownames(M_E)=c("A","B")
+colnames(M_E)=paste0("class",1:5)
+M_E
+```
+
+```{r ex1_M_T}
+M_T=matrix(c(.9,.1,.1,.9),2)
+rownames(M_T)=c("A","B")
+colnames(M_T)=c("A","B")
+M_T
+```
+
+Thus we can initialize the HMM :
+
+```{r ex1_initial_HMM}
+initial_HMM=initHMM(States=c("A","B"),
+                    Symbols=paste0("class",1:5),
+                    transProbs=M_T,
+                    emissionProbs=M_E)
+```
+
+We can now fit the HMM model using this initial parameterization.
+
+```{r ex1_hmmfit}
+hmm_fit= baumWelch(initial_HMM,series5,maxIterations=100)$hmm
+colstates=c("cadetblue3","sienna2")
+
+
+round(hmm_fit$emissionProbs,2)
+round(hmm_fit$transProbs,2)
+```
+
+Figure @fig-hmmfit illustrates the differences between states A and B: A is characterized by a frequent occurence of classes 3 and 4 while B is characterized by a frequent occurence of classes 1, 2 and 5.
+
+```{r hmmfit, fig.width=8,fig.height=4}
+#| label: fig-hmmfit
+#| fig-cap: "Fitted parameters of the HMM."
+layout(matrix(1:2,nrow=1))
+par(las=1)
+mosaicplot(hmm_fit$emissionProbs, col=lcol5)
+mosaicplot(hmm_fit$transProbs, col=colstates)
+```
+
+Now, we use the fitted HMM to infer the hidden states series:
+
+```{r}
+seriesHMM=as.factor(viterbi(hmm_fit,series5))
+```
+
+```{r statesandobs, fig.width=8, fig.height=4, echo=FALSE}
+#| label: fig-statesandobs
+#| fig-cap: "1) observation series (classification into 5 clusters based on quantitative variables) 2) hidden states series (classification into two states based on observation series consisting of 5 possible clusters)."
+layout(matrix(1:2,nrow=2))
+par(mar=c(2,1,2,1),oma=c(1,1,1,1))
+plot_cat_series(series5,x=x,col=lcol5,
+                main="observation series (5 clusters)")
+plot_cat_series(seriesHMM,x=x,col=colstates,
+                main="hidden states series (2 states)")
+```
+
+Figure @fig-statesandobs displays the observation and estimated states series.
+
+### Discussion: HMM segmentation vs clustering
+
+A HMM is primarily designed to describe the sequence of hidden states underlying the observation of a *series*. Doing so, it cuts a qualitative signal into homogeneous segments.
+
+In this example, the data at hand has been used to first define 5 classes, and then a HMM model has been carried out to define 2 states based on these 5 classes. One can wonder why not define 2 classes directly.
+
+Actually, these two methods, although they seemingly result in the same kind of output (i.e. a 2-classes segmentation of the river) do not proceed according to the same principles.
+
+Hierarchical clustering makes no direct use in the geographical information in the data. The fact that two successive reaches fall into the same class is only due to the fact that two reaches tend to have similar geomorphological descriptions when they are close to each other.
+
+On the other hand, a HMM model uses both geomorphological descriptors AND geographical information (i.e. the location of reaches in the sequence) to define which state they are most likely to result from.
+
+To illustrate this we will use the quantitative data at hand to define a 2-classes description based on a hierarchical clustering. Figure @fig-comparison2classes shows the characteristics of these 2 classes as well as the characteristics of reaches occurring presumably in states A and B.
+
+```{r boxplot2, fig.width=10, fig.height=16, echo=FALSE}
+#| label: fig-comparison2classes
+#| fig-cap: "Comparison of 1) classes (output of hierarchical clustering with 2 classes) and 2) hidden states as estimated based on a HMM model."
+layout(matrix(c(1,1,1,2,2,2,3:8,9:14),byrow=TRUE,nrow=3),heights=c(2,1,1))
+par(mar=c(0,0,2,0), cex.main=1.2)
+s.class(monACP$li,grouping2,col=lcol2)
+s.class(monACP$li,seriesHMM,col=colstates)
+for (i in 1:6){
+  boxplot(datascaled[,i]~grouping2,col=lcol2, 
+          main=colnames(datascaled)[i],
+          xaxt="n", yaxt="n")
+}
+
+for (i in 1:6){
+  boxplot(datascaled[,i]~seriesHMM,col=colstates, 
+          main=colnames(datascaled)[i],
+          xaxt="n", yaxt="n")
+}
+```
+
+Figure @fig-comparison2classes illustrates the closeness (in terms of descriptors) of classes either inferred (based on several quantitative variables) through hierarchical clustering and states based on a 5-classes descriptor as defined through a HMM model fit.
+
+On the other hand, figure @fig-series3types shows that there are some differences between segments either defined as the projection of the 2-classes categorization along the river (for hierarchical clustering) or defined as the most probable states path (for HMM). Taking into account the geographical succession of reaches and not only geomorphological features, the HMM path provides a less fragmented segmentation.
+
+```{r series3types, fig.width=8, fig.height=6, echo=FALSE}
+#| label: fig-series3types
+#| fig-cap: "Comparison of 1) observation series (classification into 5 clusters based on quantitative variables) 2) observation series (classification into 2 clusters based on quantitative variables) 3) hidden states series (classification into two states based on observation series consisting of 5 possible clusters)."
+layout(matrix(1:3,nrow=3))
+plot_cat_series(series5,x=x,col=lcol5,
+                main="observation series (5 clusters)")
+plot_cat_series(series2,x=x,col=lcol2,
+                main="observation series (2 clusters)")
+plot_cat_series(seriesHMM,x=x,col=colstates,
+                main="hidden states series (2 states)")
+```
+
+## Textual analysis example
+
+Let's consider an extract of a Sherlock Holmes novel.
+
+```{r}
+text=scan("data/sherlock.txt", what="raw", sep=" ")
+print(length(text))
+print(text[1:30])
+```
+
+We are interested in distinguishing the parts where the focus is mainly on Sherlock Holmes, to parts where the attention is mainly focused on the narrator, Dr Watson. We want to do this on all Sherlock Holmes novels so that this distinction should be done automatically (though here we will only use a short extract as an example).
+
+We categorize words into 3 categories:
+
+-   a neutral category (outcome "blah")
+-   a Sherlock Holmes-centered category (outome "he")
+-   a John Watson-centered category (outcome "I")
+
+```{r, echo=FALSE}
+listHe=c("He","he","him","his","Sherlock","Holmes","himself")
+listI=c("I","me","my","myself")
+observations=rep("blah",length(text))
+for (k in 1:length(text)){
+  if(any(text[k]==listI)){observations[k]="I"}
+  if(any(text[k]==listHe)){observations[k]="he"}
+  
+}
+datatext=data.frame(text,observations)
+print(datatext[1:30,])
+```
+
+Figure @fig-seqwords shows how the sequence of outcomes looks like for our example.
+
+```{r seqwords, fig.width=10, fig.height=4, echo=FALSE}
+#| label: fig-seqwords
+#| fig-cap: "The observation series: each point corresponds to a word in a text. Blue points correspond to an occurrence of an 'I' outcome, while red points correspond to an occurrence of a 'he' outcome."
+plot_cat_series(observations,x=1:length(observations),
+                col=c("grey","red","blue"))
+```
+
+```{r}
+myprop=table(observations)
+myprop=myprop/sum(myprop)
+print(myprop)
+myprop=as.vector(myprop)
+```
+
+We initialize the emission matrix stating that occurrence of the "he" outcome should be more frequent in the Holmes-centered parts while the "I" will be more frequent in the Watson-centered parts.
+
+```{r}
+M_E=matrix(c(myprop[1], myprop[1],
+             myprop[2]+0.01, myprop[2]-0.01,
+             myprop[3]-0.01, myprop[3]+0.01),
+             nrow=2)
+rownames(M_E)=c("Holmes","Watson")
+colnames(M_E)=c("blah","he","I")
+```
+
+We initialize the transition matrix stating that transition from a state to another happens about 1 time out of 100 words:
+
+```{r}
+M_T=matrix(c(0.99,0.01,0.01,0.99),2)
+rownames(M_T)=c("Holmes","Watson")
+colnames(M_T)=c("Holmes","Watson")
+```
+
+The initial HMM is:
+
+```{r}
+initial_HMM=initHMM(States=c("Holmes","Watson"),
+                    Symbols=c("blah","he","I"),
+                    transProbs=M_T,
+                    emissionProbs=M_E)
+```
+
+We can now fit the HMM model using this initial parameterization.
+
+```{r}
+hmm_fit= baumWelch(initial_HMM,observations,maxIterations=100)$hmm
+
+col_outcomes=c("grey","red","blue")
+col_states=c("pink2","skyblue3")
+
+print(round(hmm_fit$emissionProbs,2))
+print(round(hmm_fit$transProbs,2))
+```
+
+The characteristics of states "Holmes" and "Watson" are displayed in figure @fig-hmmfit2. Watson (outcome "I"), as a narrator, never completely disappears from the text even in Holmes-centered parts, while Watson-parts are characterized by a null occurrence of outcome "he".
+
+```{r hmmfit2, fig.width=8, fig.height=4, echo=FALSE}
+#| label: fig-hmmfit2
+#| fig-cap: "Fitted parameters of the HMM."
+layout(matrix(1:2,nrow=1))
+par(las=1)
+mosaicplot(hmm_fit$emissionProbs, col=col_outcomes)
+mosaicplot(hmm_fit$transProbs, col=col_states)
+```
+
+Now, we use the fitted HMM to infer the hidden states series:
+
+```{r}
+states_speech=as.factor(viterbi(hmm_fit,observations))
+```
+
+```{r words, fig.width=8, fig.height=4, echo=FALSE}
+#| label: fig-words
+#| fig-cap: "Observation series and state series."
+layout(matrix(1:2,nrow=2))
+par(mar=c(2,1,2,1),oma=c(1,1,1,1))
+plot_cat_series(observations,col=col_outcomes,
+                main="words outcome") 
+plot_cat_series(states_speech,col=col_states,
+                main="states of speech")
+```
+
+Figure @fig-words displays the observation and estimated states series. There is only one part of the text which appears to be Watson-centered (according to how Watson-centerization is defined, i.e. total disappearance of "he" outcomes.)
+
+```{r}
+print(text[states_speech=="Watson"])
+```

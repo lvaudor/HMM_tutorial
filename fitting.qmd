@@ -1,0 +1,373 @@
+# Fitting a HMM {#sec-baumwelch}
+
+```{r, echo=FALSE}
+library(dplyr)
+wood<- read.csv("data/wood.csv", sep=";", header=T)
+pw=length(which(wood$obsWood=="wood"))/length(wood$obsWood)
+obsWood=wood$obsWood
+
+col_outcomes=c("slateblue4","burlywood3")
+  
+```
+
+## The Baum-Welch algorithm
+
+The Baum–Welch algorithm is used to find the unknown parameters $\theta = (T,E,\pi)$ of a HMM, which maximizes the probability of the observation series.
+
+$$
+\widehat\theta = \max_{\theta} pr(X/\theta)
+$$
+
+Let's consider random initial values (or values set according to prior knowledge) for $\theta$: $\theta_0 = (T_0, E_0, \pi)$.
+
+### Forward and backward procedures
+
+![Forward and backward probabilities](img/forward-backward.png){#fig-forward-backward}
+
+
+**Forward procedure**
+
+$$
+\alpha_i(k)=pr(X_1=x_1,...,X_k=x_k,S_k=i/\theta)
+$$
+
+is the probability of getting the "beginning" of the observation series $x_1,x_2,...,x_k$ and having $i$ as ending state (at time $k$) given parameters $\theta$. 
+
+
+$\alpha_i(k)$ is calculated recursively, with: 
+$$
+\alpha_i(1)=\pi_i e_{ix_1}\\
+\alpha_j(k+1)=e_{jx_{k+1}} \sum_{i=1}^{n_S}\alpha_i(k) t_{ij}
+$$
+
+Indeed, the probability of the series $x_1,x_2,...,x_k+1$ and state $j$ at time $k+1$ is the probability that (considering all possible states $i$ at time $k$):
+
+- the first $k$ observations were $x_1,x_2,...,x_k$ and the state was $i$ at time $k$  
+- there has been a transition from state $i$ to state $j$ at time $k$
+- the outcome at time $k+1$ is $x_k+1$
+
+**Backward procedure**
+
+$$
+\beta_i(k)=pr(X_{k+1}=x_{k+1},...,X_n=x_n/S_k=i,\theta) 
+$$
+is the probability of getting the "ending" of the observation series $x_{k+1},...,x_{n}$ and $i$ as starting state (at time $k$) given parameters $\theta$. 
+
+
+$\beta_i(k)$ is calculated recursively, with:
+$$
+\beta_i(T)=1\\
+\beta_i(k)=\sum_{j=1}^{n_S} \beta_j(k+1)t_{ij}e_j(x_{k+1})
+$$
+
+
+Indeed, the probability of the series $x_{k},x_{k+1},...,x_n$ and state $i$ at time $k$ is the probability that (considering all possible states $j$ at time $k+1$):
+
+- the last $n-k$ observations were $x_{k+1},...,x_n$ and the state was $j$ at time $k+1$  
+- there has been a transition from state $i$ to state $j$ at time $k$
+- the outcome at time $k+1$ is $x_k+1$
+
+
+
+The forward and backward procedures are illustrated in figure @fig-forward-backward.
+
+### Probability of states
+
+We can now calculate the probability of being in state $i$ at time $k$ given the observed sequence $X$ and parameters $\theta$, $\gamma_i(k)=pr(S_k=i/X,\theta)$.
+
+Indeed, according to Bayes's formula,
+
+$$
+pr(S_k=i/X,\theta)=\frac{pr(X,S_k=i/\theta)pr(\theta)}{pr(X,\theta)}
+$$
+
+$$
+=\frac{pr(X,S_k=i/\theta)pr(\theta)}{pr(X/\theta)pr(\theta)}
+$$
+$$
+=\frac{pr(X,S_k=i/\theta)}{pr(X/\theta)}
+$${#eq-eqnSk}
+
+and we have
+
+$$
+pr(X,S_k=i/\theta) = pr(X_1,X_2,....X_k,S_k=i/\theta)* pr(X_{k+1},X_{k+2},....X_n,S_{k+1}=j/\theta)
+$$
+
+$$
+= \alpha_i(k)\beta_i(k)
+$${#eq-eq1}
+
+Summing this probability for all possible states at time $k$ we get:
+
+$$
+pr(X/\theta) = \sum_{m=1}^{n_S}pr(X,S_k=m)/\theta)
+$$
+
+$$
+= \sum_{m=1}^{n_S}\alpha_m(k)\beta_m(k)    
+$${#eq-eq2}
+
+Hence with results @eq-eq1 and @eq-eq2 we can simplify equation @eq-eqnSk into:
+
+$$
+\gamma_i(k) = pr(S_k=i/X,\theta)
+$$
+$$
+= \frac{\alpha_i(k)\beta_i(k)}
+                {\sum_{m=1}^{n_S}\alpha_m(k)\beta_m(k)} 
+$$
+We can now calculate the probability of being in state $i$ at time $k$ given the observed sequence $X$ and parameters $\theta$, $\gamma_i(k)=pr(S_k=i/X,\theta)$.
+
+The probability of being in state $i$ and $j$ at times $k$ and $k+1$ respectively given the observed sequence $X$ and parameters $\theta$, $\xi_{ij}(k)=pr(S_k=i,S_{k+1}=j/X,\theta)$.
+
+Indeed, according to Bayes's formula
+
+$$
+pr(S_k=i,S_{k+1}=j/X,\theta)=\frac{pr(X,S_k(i),S_{k+1}=j/\theta)pr(\theta)}{pr(X,\theta)}
+$$
+
+$$
+=\frac{pr(X,S_k(i),S_{k+1}=j/\theta)pr(\theta)}
+                                  {pr(X/\theta)pr(\theta)}
+$$
+$$
+=\frac{pr(X,S_k(i),S_{k+1}=j/\theta)}                             {pr(X/\theta)}
+$${#eq-eqnSkSkp1}
+
+and we can reformulate the probability of observations and successive states at times $k$ and $k+1$ the following way:
+
+$$
+pr(X,S_k=i,S_{k+1}=j)/\theta) = pr(X_1,X_2,...,X_k, S_k=i/\theta)* pr(X_{k+1}, S_k=i, S_{k+1}=j/\theta)*pr(X_{k+2},X_{k+3},...,X_n, S_k+1=j/\theta)
+$$
+
+$$
+= \alpha_i(k)t_{ij}e_{jx_{k+1}}\beta_j(k+1)
+$$ {#eq-eq3}
+
+Hence with results @eq-eq3 and @eq-eq2 we can simplify equation @eq-eqnSkSkp1 into:
+
+$$
+\xi_{ij}(k) = pr(S_k=i,S_{k+1}=j/X,\theta)
+$$
+
+$$
+= \frac{\alpha_i(k)t_{ij}e_{jx_{k+1}}\beta_j(k+1)}
+                {\sum_{m=1}^{n_S}\alpha_m(k)\beta_m(k)}       
+$$ 
+
+### Estimates of parameters
+
+The expected frequency spent in state i at time 1 is:
+$$
+\widehat{\pi_i} = \gamma_i(1)
+$$
+
+
+The expected transition probability from state $i$ to state $j$ is equal to the expected frequency of states $i$ and $j$ at two successive times, divided by the expected frequency of state $i$.
+
+$$
+\widehat{t_{ij}}=\frac{\sum^{n-1}_{k=1}\xi_{ij}(k)}{\sum^{n-1}_{k=1}\gamma_i(k)}
+$$
+
+
+The expected emission frequency of outcome $x$ from state $i$ is equal to the frequency of state i and outcome $x$ occurring at the same time over the expected frequency of state $i$.
+
+$$
+\widehat{e_{ix}}=\frac{\sum^n_{k=1} 1_{X_k=x} \gamma_i(k)}{\sum^n_{k=1} \gamma_i(k)}
+$$
+
+As a consequence, based on $X$ and $\theta_0$ (corresponding to the initial transition and emission probabilities), we can calculate and expected value $\hat\theta$ (corresponding to transition and emission probabilities that are consistent both with observations and hypothesized values of $\theta$).
+
+
+- We set $\theta=\theta_0$ and based on these parameters calculate $\theta_1=\hat\theta$
+- We set $\theta=\theta_1$ and based on these parameters calculate $\theta_2=\hat\theta$
+- etc.
+
+This process is repeated until a desired level of convergence, i.e. until$|\hat\theta-\theta|$ is below a certain threshold. Indeed, the lower $|\hat\theta-\theta|$, the closer $\hat\theta$ is to a **local optimum for $\theta$**. Note that the algorithm does not guarantee a global maximum.
+
+## Fitting a HMM in practice
+
+Let's go back to the wood occurrence series. We will use the Baum-Welch algorithm to fit a HMM with two hidden states, H and L, defined as "High occurrence frequency state" and "Low occurrence frequency state". To do this, we will use the function "baumWelch" from the "HMM" R package.
+
+```{r}
+library(HMM)
+```
+
+As we have seen, the Baum-Welch algorithm iteratively adjusts the parameter values $\theta$ to maximize likelihood. Thus we have to *initialize* the algorithm with a prior estimate of $\theta$.
+
+We could, for instance, consider that the two states we are interested in are not very contrasted (let's talk of uncontrasted states -UCS- from now on), and that transition probabilities are quite low (low transition probabilities: LTP). Here, we will hence consider that the H state is characterized by +5% chances of getting wood, and the L state is characterized by -5% chances of getting wood (compared to the overal frequency of `r round(pw*100,2)`%). 
+
+Thus we can write the "UCS" emission matrix this way:
+
+```{r}
+M_UCS=matrix(c(1-(pw-0.05),1-(pw+0.05),pw-0.05,(pw+0.05)),2)
+rownames(M_UCS)=c("L","H")
+colnames(M_UCS)=c("nothing","wood")
+print(round(M_UCS,2))
+```
+
+We will also consider that at each time, there is only 10% chances to change from state L to state H, or from state H to state L.
+
+Thus we can write the "LTP" transition matrix this way:
+
+```{r}
+M_LTP=matrix(c(.9,.1,.1,.9),2)
+rownames(M_LTP)=c("L","H")
+colnames(M_LTP)=c("L","H")
+print(M_LTP)
+```
+
+The initialization of the HMM is done through:
+
+```{r}
+initial_HMM=initHMM(States=c("L","H"),
+                    Symbols=c("nothing","wood"),
+                    transProbs=M_LTP,
+                    emissionProbs=M_UCS)
+print(initial_HMM)
+```
+
+i.e. the states (L or H), and outcomes ("nothing" or "wood") are defined, and initial values are set to the transition and emission matrices.
+
+The various elements of the object `initial_HMM` can be accessed (as is the usual way with R lists) through:
+
+```{r}
+names(initial_HMM)
+print(initial_HMM$emissionProbs)
+```
+
+
+Then the optimization can be carried out through:
+
+```{r}
+hmm_fit_1= baumWelch(initial_HMM,obsWood,maxIterations=100)
+print(hmm_fit_1)
+```
+
+## Effect of parameter initialization
+
+According to how we initialize the HMM, we could get different results... Indeed, the Baum-Welch algorithm converges to a local solution which might not be the global optimum (i.e., according to the initial values of the matrices, we could get different results).
+
+Hence, let us consider different initial parameterizations. In our first example we had considered states that were quite uncontrasted (there was only +10% chances of observing some wood in state H compared to state L). Alternatively, we could consider quite contrasted states (e.g. with +40% chances of observing some wood in state H compared to state L):
+
+```{r}
+M_CS=matrix(c(1-(pw-0.40),1-(pw+0.40),pw-0.40,(pw+0.40)),2)
+rownames(M_CS)=c("L","H")
+colnames(M_CS)=c("nothing","wood")
+print(round(M_CS,2))
+```
+
+In our first example we also considered that there were few chances to change from one state from another, i.e. we used low transition probabilities. Alternatively, we could consider **higher transition probabilities (HTP)**:
+
+```{r}
+M_HTP=matrix(c(.5,.5,.5,.5),2)
+rownames(M_HTP)=c("L","H")
+colnames(M_HTP)=c("L","H")
+print(M_HTP)
+```
+
+Let's initialize our HMM in various ways with matrices `M_LTP` vs `M_HTP` for transition probabilities and `M_CS` vs `M_UCS` for emission probabilities (i.e. 4 possibilities):
+
+```{r}
+# FIRST CASE: starting from M_LTP and M_UCS
+hmm_init_LTP_UCS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_LTP,
+                   emissionProbs=M_UCS)
+# SECOND CASE: starting from M_LTP and M_CS
+hmm_init_LTP_CS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_LTP,
+                   emissionProbs=M_CS)
+# THIRD CASE: starting from M_HTP and M_UCS
+hmm_init_HTP_UCS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_HTP,
+                   emissionProbs=M_UCS)
+# FOURTH CASE: starting from M_HTP and M_CS
+hmm_init_HTP_CS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_HTP,
+                   emissionProbs=M_CS)
+
+
+list_hmm_init=list(hmm_init_LTP_UCS,
+                   hmm_init_LTP_CS,
+                   hmm_init_HTP_UCS,
+                   hmm_init_HTP_CS)
+
+```
+
+```{r initmatrices, include=FALSE, fig.width=4, fig.height=4}
+#| fig-cap: "Initial emission and transition matrices."
+par(mar=c(2,2,2,1),oma=c(0,2,0,0))
+layout(matrix(1:8,nrow=4, byrow=TRUE))
+col_states=c("burlywood1","slateblue")
+for (case in 1:4){
+  hmm_init=list_hmm_init[[case]]
+
+  mosaicplot(hmm_init$transProbs, dir=c("h","v"), 
+                 color=col_states,main="")
+  mosaicplot(hmm_init$emissionProbs, dir=c("h","v"),
+                 color=col_outcomes,main="")
+  mtext(side=2, c("LTP_UCS","LTP_CS","HTP_UCS","HTP_CS")[case],
+        outer=TRUE, at=rev(seq(from=0.125,to=0.875, by=0.25))[case])
+  
+}
+
+```
+
+Now the HMM are fitted (with various initial parameterizations):
+
+
+```{r}
+hmm_fit_LTP_UCS= baumWelch(hmm_init_LTP_UCS,obsWood)$hmm
+hmm_fit_LTP_CS= baumWelch(hmm_init_LTP_CS,obsWood)$hmm
+hmm_fit_HTP_UCS= baumWelch(hmm_init_HTP_UCS,obsWood)$hmm
+hmm_fit_HTP_CS= baumWelch(hmm_init_HTP_CS,obsWood)$hmm
+list_hmm_fit=list(hmm_fit_LTP_UCS,
+                  hmm_fit_LTP_CS,
+                  hmm_fit_HTP_UCS,
+                  hmm_fit_HTP_CS)
+```
+
+
+Here are the transition matrices we get in the four cases:
+
+```{r}
+print(round(hmm_fit_LTP_UCS$transProbs,2))
+print(round(hmm_fit_LTP_CS$transProbs,2))
+print(round(hmm_fit_HTP_UCS$transProbs,2))
+print(round(hmm_fit_HTP_CS$transProbs,2))
+```
+
+
+Here are the emission matrices we get in the four cases:
+
+```{r}
+print(round(hmm_fit_LTP_UCS$emissionProbs,2))
+print(round(hmm_fit_LTP_CS$emissionProbs,2))
+print(round(hmm_fit_HTP_UCS$emissionProbs,2))
+print(round(hmm_fit_HTP_CS$emissionProbs,2))
+```
+
+In this particular case, we have obtained the same fits with all initial parameterizations (which is actually reassuring as it implies that the optimum we get is a "not-so-local" optimum). 
+
+But if we had provided the Baum-Welch algorithm with a very different initial transition matrix ("VHTP" for "Very High Transition Probabilities"), e.g.
+
+```{r}
+M_VHTP=matrix(c(.1,.9,.9,.1),2)
+rownames(M_VHTP)=c("L","H")
+colnames(M_VHTP)=c("L","H")
+print(M_VHTP)
+hmm_init_VHTP_UCS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_VHTP,
+                   emissionProbs=M_UCS)
+hmm_fit_VHTP_UCS= baumWelch(hmm_init_VHTP_UCS,obsWood)$hmm
+```
+
+then we would have got the following fit:
+
+```{r}
+hmm_fit_VHTP_UCS$transProbs
+hmm_fit_VHTP_UCS$emissionProbs
+```
+
+This is actually a very peculiar way to initialize the transition matrix as it assumes that there are more chances of changing states at each time than of staying in the same state. With this parameterization, chances are the series of states is basically a succession of "L"-"H"-"L"-"H"-"L"-"H"... so that the two states are naturally quite uncontrasted in terms of outcome probabilities.

@@ -1,0 +1,26 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "HMM_tutorial"
+  author: "Lise Vaudor"
+  date: "17/11/2023"
+  chapters:
+    - index.qmd
+    - intro.qmd
+    - fitting.qmd
+    - hidden_states.qmd
+    - case_studies.qmd
+    - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+     css: style.css
+  pdf:
+    documentclass: scrreprt
+
+editor: visual
+

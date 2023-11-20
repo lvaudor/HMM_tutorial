@@ -1,0 +1,121 @@
+# Predicting hidden states {#sec-viterbi}
+
+```{r, echo=FALSE}
+library(HMM)
+wood<- read.csv("data/wood.csv", sep=";", header=T)
+attach(wood)
+
+pw=length(which(wood$obsWood=="wood"))/length(wood$obsWood)
+obsWood=wood$obsWood
+
+col_states=c("burlywood1","slateblue")
+col_outcomes=c("slateblue4","burlywood3")
+
+M_LTP=matrix(c(.9,.1,.1,.9),2)
+rownames(M_LTP)=c("L","H")
+colnames(M_LTP)=c("L","H")
+M_UCS=matrix(c(1-(pw-0.05),1-(pw+0.05),pw-0.05,(pw+0.05)),2)
+rownames(M_UCS)=c("L","H")
+colnames(M_UCS)=c("nothing","wood")
+M_CS=matrix(c(1-(pw-0.40),1-(pw+0.40),pw-0.40,(pw+0.40)),2)
+rownames(M_CS)=c("L","H")
+colnames(M_CS)=c("nothing","wood")
+M_HTP=matrix(c(.5,.5,.5,.5),2)
+rownames(M_HTP)=c("L","H")
+colnames(M_HTP)=c("L","H")
+
+source("scripts/tools_cat_series.R")
+
+# FIRST CASE: starting from M_LTP and M_UCS
+hmm_init_LTP_UCS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_LTP,
+                   emissionProbs=M_UCS)
+# SECOND CASE: starting from M_LTP and M_CS
+hmm_init_LTP_CS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_LTP,
+                   emissionProbs=M_CS)
+# THIRD CASE: starting from M_HTP and M_UCS
+hmm_init_HTP_UCS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_HTP,
+                   emissionProbs=M_UCS)
+# FOURTH CASE: starting from M_HTP and M_CS
+hmm_init_HTP_CS = initHMM(c("L","H"),c("nothing","wood"),
+                   transProbs=M_HTP,
+                   emissionProbs=M_CS)
+
+
+list_hmm_init=list(hmm_init_LTP_UCS,
+                   hmm_init_LTP_CS,
+                   hmm_init_HTP_UCS,
+                   hmm_init_HTP_CS)
+
+
+```
+
+## The Viterbi algorithm
+
+The Viterbi algorithm is a dynamic programming algorithm for finding the most likely sequence of hidden states -- called the Viterbi path -- that results in a sequence of observed events, especially in the context of Markov information sources and hidden Markov models.
+
+The most likely series of states $s_1,\dots,s_n$ underlying the observations is found recursively.
+
+![Viterbi algorithm](img/Viterbi.png){#fig-viterbi}
+
+Let us define $\delta_i(k)$ as the highest probability of observations $X_1,X_2,....,X_k$ considering all possible paths ($S_1=s_1,S_2=s_2,\ldots, S_k=i$), (i.e. all possible paths going from step 1 to $k$, and ending with state $i$):
+
+$$
+\delta_i(k) = max_{s_1,s_2,....s_{k-1}}pr(X_1,X_2,\ldots,X_k,S_1=s_1,S_2=s_2,\ldots,S_k=i)/\theta)
+$$
+
+We note $\phi_i(k)$ the argument of this maximum, i.e.
+
+$$
+\phi_i(k) = Argmax_{s_1,s_2,....s_{k-1}}pr(X_1,X_2,\ldots,X_k,S_1=s_1,S_2=s_2,\ldots,S_k=i)/\theta)
+$$
+
+Hence, $\delta_i(k)$ corresponds to a maximum probability while $\phi_i(k)$ corresponds to the state $i$ that maximizes it.
+
+$\delta_j(k+1)$ can be expressed as a function of $\delta_i(k)$:
+
+$$
+\delta_j(k+1) = [max_i\delta_i(k)t_{ij}]*e_{jx_k+1}
+$$
+
+Starting with
+
+$$
+\delta_1(i)=\pi_ie_{ix_1}
+$$
+
+we can thus calculate recursively $\delta_i(k)$ and $\phi_i(k)$ for all possible states $i$, as it is illustrated in figure \ref{Viterbi}.
+
+![Viterbi algorithm: an example of calculation and backward determination of the Viterbi path](img/Viterbi_example.png)
+
+## Applying the Viterbi aligorithm in practice
+
+Now we calculate the latent series according to the four different sets of initial parameters. We do not calculate them using the fitted HMMs because they are very close to each other and we want to show the effect of parameters on the inferred states sequence.
+
+```{r}
+latent_series_LTP_UCS=as.factor(viterbi(hmm_init_LTP_UCS,obsWood))
+latent_series_LTP_CS=as.factor(viterbi(hmm_init_LTP_CS,obsWood))
+latent_series_HTP_UCS=as.factor(viterbi(hmm_init_HTP_UCS,obsWood))
+latent_series_HTP_CS=as.factor(viterbi(hmm_init_HTP_CS,obsWood))
+list_latent_series=list(latent_series_LTP_UCS,
+                        latent_series_LTP_CS,
+                        latent_series_HTP_UCS,
+                        latent_series_HTP_CS)
+
+```
+
+```{r latentseries, echo=FALSE,fig.width=8,fig.height=8}
+#| fig-cap: "Various latent series of states (according to parameterization)"
+layout(matrix(1:5,nrow=5))
+par(mar=c(3,3,2,1), oma=c(1,1,1,1))
+plot_cat_series(obsWood,x=PK,col=col_outcomes,main="observations")
+for(case in 1:4){
+latent_series=list_latent_series[[case]]
+plot_cat_series(latent_series,x=PK,col=col_states,
+                main=c("LTP_UCS","LTP_CS","HTP_UCS","HTP_CS")[case])
+}
+```
+
+Unsurprisingly, when transition probabilities are higher (`HTP_*` vs `LTP_*`), the segments tend to be shorter. The emission probabilities also have an effect on the segments' lengths: contrasted states (in the case `LTP_CS` vs `LTP_UCS`) hence correspond to shorter segments.

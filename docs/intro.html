@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.361">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>HMM_tutorial - 1&nbsp; Introduction</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./fitting.html" rel="next">
+<link href="./index.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">HMM_tutorial</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./intro.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./fitting.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fitting a HMM</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./hidden_states.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Predicting hidden states</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./case_studies.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Case studies</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#a-generic-example-of-hmm-the-bags-and-balls-colors-series" id="toc-a-generic-example-of-hmm-the-bags-and-balls-colors-series" class="nav-link active" data-scroll-target="#a-generic-example-of-hmm-the-bags-and-balls-colors-series"><span class="header-section-number">1.1</span> A generic example of HMM: the bags and balls’ colors series</a></li>
+  <li><a href="#notations-associated-with-a-hmm" id="toc-notations-associated-with-a-hmm" class="nav-link" data-scroll-target="#notations-associated-with-a-hmm"><span class="header-section-number">1.2</span> Notations associated with a HMM</a>
+  <ul class="collapse">
+  <li><a href="#transition-probabilities" id="toc-transition-probabilities" class="nav-link" data-scroll-target="#transition-probabilities"><span class="header-section-number">1.2.1</span> Transition probabilities</a></li>
+  <li><a href="#emission-probabilities" id="toc-emission-probabilities" class="nav-link" data-scroll-target="#emission-probabilities"><span class="header-section-number">1.2.2</span> Emission probabilities</a></li>
+  <li><a href="#initial-state-distribution" id="toc-initial-state-distribution" class="nav-link" data-scroll-target="#initial-state-distribution"><span class="header-section-number">1.2.3</span> Initial state distribution</a></li>
+  <li><a href="#parameters-of-a-hmm" id="toc-parameters-of-a-hmm" class="nav-link" data-scroll-target="#parameters-of-a-hmm"><span class="header-section-number">1.2.4</span> Parameters of a HMM</a></li>
+  </ul></li>
+  <li><a href="#questions-associated-to-a-hmm" id="toc-questions-associated-to-a-hmm" class="nav-link" data-scroll-target="#questions-associated-to-a-hmm"><span class="header-section-number">1.3</span> Questions associated to a HMM</a></li>
+  <li><a href="#a-practical-example-the-wood-occurrence-series" id="toc-a-practical-example-the-wood-occurrence-series" class="nav-link" data-scroll-target="#a-practical-example-the-wood-occurrence-series"><span class="header-section-number">1.4</span> A practical example: the wood occurrence series</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Introduction</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="a-generic-example-of-hmm-the-bags-and-balls-colors-series" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="a-generic-example-of-hmm-the-bags-and-balls-colors-series"><span class="header-section-number">1.1</span> A generic example of HMM: the bags and balls’ colors series</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/operator_and_states.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">An example of Hidden Markov Model with two states (bag A and bag B) and two outcomes (red ball -R- or white ball -W).</figcaption>
+</figure>
+</div>
+<p>Let’s consider the following example (which we will refer to as the **bags and balls’s colors example*}** throughout this tutorial).</p>
+<p>An operator has two bags, A et B, filled with either red or white balls in different proportions. He carries out the following experiment:</p>
+<ul>
+<li>He chooses one bag out of the two</li>
+<li>He draws a ball out the bag he has just chosen, writes down its color on a sheet of paper, and then puts it back in the bag</li>
+<li>He chooses to keep that same bag or to take the other one</li>
+<li>He draws a ball out of the bag, writes down its color on the sheet of paper, and then puts it back in the bag</li>
+<li>He chooses to keep that same bag or to take the other one,</li>
+<li>etc.</li>
+</ul>
+<p>He thus repeats the same process “drawing of ball, choosing of bag” <span class="math inline">\(n\)</span> times. Then we are given the sheet of paper with the succession of colors written on it… We thus <strong>know the sequence of colors (the observations)</strong> but we <strong>do not know the sequence of bags (the hidden states)</strong>. A possible series of hidden states and observations is shown in figure <a href="#fig-series">Figure&nbsp;<span>1.1</span></a>.</p>
+<p>We suppose that at any iteration <span class="math inline">\(k\)</span>, the operator chooses to keep the same bag or to change it only based on a constant rule which depends on the bag he had during iteration <span class="math inline">\(k-1\)</span>.</p>
+<p>That is to say that the hidden state variable has the <strong>Markov property</strong>: its probability distribution at iteration <span class="math inline">\(k\)</span> depends only on its value at iteration <span class="math inline">\((k_1)\)</span>, but is independent of all previous iterations (hence <span class="math inline">\(pr(S_k/S_{k-1})\)</span> is independent of <span class="math inline">\(S_1,S_2,...S_{k-2}\)</span>). It also means that <span class="math inline">\(pr(S_k/S_{k-1})\)</span> is independent of <span class="math inline">\(k\)</span>.</p>
+<div id="fig-series" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="img/hiddenstates_and_observations_series.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;1.1: An example of hidden states and observations series</figcaption>
+</figure>
+</div>
+</section>
+<section id="notations-associated-with-a-hmm" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="notations-associated-with-a-hmm"><span class="header-section-number">1.2</span> Notations associated with a HMM</h2>
+<p>Finally we know the series <span class="math inline">\(X=(X_1,X_2,X_3,...,X_n)\)</span> which corresponds, in the bags and balls’ colors example, to the <strong>balls’ colors</strong> (i.e.&nbsp;the <strong>observations</strong> series). The two possible <strong>outcomes</strong> are “red” (R) or “white” (W). On the other hand, we do not know the series <span class="math inline">\(S=(S_1,S_2,S_3,...S_n)\)</span> which corresponds to the <strong>names of the bags</strong> out of which the balls have been drawn (i.e.&nbsp;the <strong>hidden states</strong> series)</p>
+<p>Here, the possible hidden states are either <span class="math inline">\(S_k=A\)</span> ou <span class="math inline">\(S_k=B\)</span> and the possible outcomes are either <span class="math inline">\(X_k=R\)</span> ou <span class="math inline">\(X_k=W\)</span>.</p>
+<section id="transition-probabilities" class="level3" data-number="1.2.1">
+<h3 data-number="1.2.1" class="anchored" data-anchor-id="transition-probabilities"><span class="header-section-number">1.2.1</span> Transition probabilities</h3>
+<p>Let’s consider the following notations:</p>
+<p>For all iterations (i.e.&nbsp;for all values of <span class="math inline">\(k\)</span>), the probabilities of a **transition from a hidden state to another} are:</p>
+<ul>
+<li><span class="math inline">\(p_{AB}=pr(S_k=B/S_{k-1}=A)\)</span> is the probability that the operator changes from bag A to bag B</li>
+<li><span class="math inline">\(p_{AA}=pr(S_k=A/S_{k-1}=A)\)</span> is the probability that the operator keeps bag A</li>
+<li><span class="math inline">\(p_{BA}=pr(S_k=A/S_{k-1}=B)\)</span> is the probability that the operator changes from bag B to bag A</li>
+<li><span class="math inline">\(p_{BB}=pr(S_k=B/S_{k-1}=B)\)</span> is the probability that the operator keeps bag B</li>
+</ul>
+<p>Based on these notations we can define the <strong>transition matrix</strong> (transition from a state to another) as:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">A</th>
+<th style="text-align: center;">B</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;"><span class="math inline">\(p_{AA}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(p_{AB}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">B</td>
+<td style="text-align: center;"><span class="math inline">\(p_{BA}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(p_{BB}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Generalization</strong></p>
+<p>Let <span class="math inline">\(S_k\)</span> be a discrete hidden random variable with sample space (i.e.&nbsp;set of all <span class="math inline">\(n_S\)</span> possible outcomes) <span class="math inline">\(\Omega_S\)</span>.</p>
+<p>The probability of a state <span class="math inline">\(j\)</span> at time <span class="math inline">\(k\)</span> given the state was <span class="math inline">\(i\)</span> at time <span class="math inline">\(k-1\)</span> is given by matrix:</p>
+<p><span class="math display">\[
+T=\{t_{ij}\}_{(i,j)\in \Omega_S^2}=pr(S_k=j|S_{k-1}=i)
+\]</span></p>
+</section>
+<section id="emission-probabilities" class="level3" data-number="1.2.2">
+<h3 data-number="1.2.2" class="anchored" data-anchor-id="emission-probabilities"><span class="header-section-number">1.2.2</span> Emission probabilities</h3>
+<p>For all iterations (i.e.&nbsp;for all values of <span class="math inline">\(k\)</span>), the probabilities of the **outcomes conditional on hidden state} are:</p>
+<ul>
+<li><span class="math inline">\(p_{AW}=pr(X_k=W/S_k=A)\)</span> is the probability of drawing a white ball from bag A</li>
+<li><span class="math inline">\(p_{AR}=pr(X_k=R/S_k=A)\)</span> is the probability of drawing a red ball from bag A</li>
+<li><span class="math inline">\(p_{BW}=pr(X_k=W/S_k=B)\)</span> is the probability of drawing a white ball from bag B</li>
+<li><span class="math inline">\(p_{BR}=pr(X_k=R/S_k=B)\)</span> is the probability of drawing a red ball from bag B</li>
+</ul>
+<p>Based on these notations we can define the <strong>emission matrix</strong> (emission of an outcome from a state) as:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: center;"></th>
+<th style="text-align: center;">W</th>
+<th style="text-align: center;">R</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">A</td>
+<td style="text-align: center;"><span class="math inline">\(p_{AW}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(p_{AR}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">B</td>
+<td style="text-align: center;"><span class="math inline">\(p_{BW}\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(p_{BR}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>**Generalization</p>
+<p>Let <span class="math inline">\(X_k\)</span> be a discrete observed random variable with sample space (i.e.&nbsp;set of all <span class="math inline">\(n_X\)</span> possible outcomes) <span class="math inline">\(\Omega_X\)</span>.</p>
+<p>The probability of a certain outcome <span class="math inline">\(l\)</span> at time <span class="math inline">\(k\)</span> given the state at that same time is <span class="math inline">\(i\)</span> is given by matrix:</p>
+<p><span class="math display">\[
+E=\{e_{il}\}_{(i,l)\in \Omega_S\times\Omega_X}=pr(X_k=l|S_k=i)
+\]</span></p>
+</section>
+<section id="initial-state-distribution" class="level3" data-number="1.2.3">
+<h3 data-number="1.2.3" class="anchored" data-anchor-id="initial-state-distribution"><span class="header-section-number">1.2.3</span> Initial state distribution</h3>
+<p>The initial state distribution (i.e.&nbsp;probabilities of being in state i when <span class="math inline">\(k=1\)</span>) is given by</p>
+<p><span class="math display">\[
+\pi_i=pr(S_1 = i).
+\]</span></p>
+<p>We use the notation <span class="math inline">\(\pi=(\pi_1,\pi_2,...\pi_{n_X})\)</span></p>
+</section>
+<section id="parameters-of-a-hmm" class="level3" data-number="1.2.4">
+<h3 data-number="1.2.4" class="anchored" data-anchor-id="parameters-of-a-hmm"><span class="header-section-number">1.2.4</span> Parameters of a HMM</h3>
+<p>Finally, a hidden Markov model can be fully described by the set of parameters <span class="math inline">\(\theta = (T,E,\pi)\)</span> where</p>
+<ul>
+<li><span class="math inline">\(T\)</span> corresponds to the transition probabilities,</li>
+<li><span class="math inline">\(E\)</span> corresponds to the emission probabilities,</li>
+<li><span class="math inline">\(\pi\)</span> to the initial state probabilities.</li>
+</ul>
+</section>
+</section>
+<section id="questions-associated-to-a-hmm" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="questions-associated-to-a-hmm"><span class="header-section-number">1.3</span> Questions associated to a HMM</h2>
+<p>A HMM user typically searches answers to the following questions:</p>
+<ul>
+<li>What are the characteristics of states, which optimally describe the series of observations?</li>
+<li>What is the most probable series of hidden states considering the series of observations?</li>
+</ul>
+<p>Answering the first question consists in fitting the model, i.e.&nbsp;estimating its parameters (emission and transition probabilities). This will be the focus of section <span class="math inline">\(\ref{baumwelch}\)</span>.</p>
+<p>Answering the second one consists in calculating the most likely series of hidden states (based on both observation series and fitted model). This will be the focus of section <span class="math inline">\(\ref{viterbi}\)</span>.</p>
+</section>
+<section id="a-practical-example-the-wood-occurrence-series" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="a-practical-example-the-wood-occurrence-series"><span class="header-section-number">1.4</span> A practical example: the wood occurrence series</h2>
+<p>Let’s consider a spatial series consisting of occurrence of wood rafts along a river. Each data sample corresponds to a 500 meters-long section of the river.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>wood<span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/wood.csv"</span>, <span class="at">sep=</span><span class="st">";"</span>, <span class="at">header=</span>T)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">attach</span>(wood)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(wood[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>,])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>    PK obsWood
+1  0.0 nothing
+2  0.5 nothing
+3  1.0 nothing
+4  1.5    wood
+5  2.0    wood
+6  2.5 nothing
+7  3.0 nothing
+8  3.5    wood
+9  4.0 nothing
+10 4.5 nothing</code></pre>
+</div>
+</div>
+<p>In the script <code>tools_cat_series</code> you will find some R functions helping with the graphical representation of categorical series.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"scripts/tools_cat_series.R"</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>col_outcomes<span class="ot">=</span><span class="fu">c</span>(<span class="st">"slateblue4"</span>,<span class="st">"burlywood3"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_cat_series</span>(obsWood,<span class="at">x=</span>PK,<span class="at">col=</span>col_outcomes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="intro_files/figure-html/wood-1.png" class="img-fluid figure-img" width="1152"></p>
+<figcaption class="figure-caption">An example of observation series: occurrence of wood 500 meter-long sections of the river.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>We want to characterize the fact that the <strong>occurrence of wood (“wood” outcome vs “nothing” outcome)</strong> is more or less frequent according to an unobserved characteristic of the river. Hence we consider the river is either in a state we define as:</p>
+<ul>
+<li><strong>“State 1: High frequency of wood occurrence” (H)</strong> or</li>
+<li><strong>“State 2: Low frequency of wood occurrence” (L)</strong>.</li>
+</ul>
+<p>Over the whole series of observations :</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">table</span>(obsWood))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>obsWood
+nothing    wood 
+    100      88 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>pw<span class="ot">=</span><span class="fu">table</span>(obsWood)[<span class="dv">2</span>]<span class="sc">/</span><span class="fu">length</span>(obsWood)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>     wood 
+0.4680851 </code></pre>
+</div>
+</div>
+<p>We have 46.81% chances of observing the “wood” outcome on a single point.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-prop_wood" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="intro_files/figure-html/fig-prop_wood-1.png" class="img-fluid figure-img" width="768"></p>
+<figcaption class="figure-caption">Figure&nbsp;1.2: Frequency of wood occurrence along the river (20 equal-sized sections). The horizontal dotted lines correspond to the quantiles of order 2.5% and 97.5% of the observed proportion under the hypothesis of a contant value <span class="math inline">\(\pi_w\)</span> along the river.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Cutting the river into (for instance) 20 equal-sized sections, we observe that the frequency of “wood” outcome seems to vary along the river (cf fig. <a href="#fig-prop_wood">Figure&nbsp;<span>1.2</span></a>). If obsWood followed a constant binomial distribution (with a proportion of “wood” outcome <span class="math inline">\(\pi_w=\)</span> 46.81%) all along the river, then we would have a 95% probability of observing proportions of “wood” outcome between 37% and 57%.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./index.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./fitting.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Fitting a HMM</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>
