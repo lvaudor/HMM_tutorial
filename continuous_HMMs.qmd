@@ -1,57 +1,131 @@
 # Continuous Hidden Markov Models
 
-# Introduction
+Although states in Hidden Markov Models are by definition categorical, the observations might be quantitative rather than categorical. In these cases the HMM might be called continuous observations HMMs or **continuous HMMs** (though the quantitative outputs might actually have discrete or pseudo-continous distributions).
+
+We will illustrate such a model in the case of a Poisson distribution. To do so we will consider an **observed series consisting of the number of wood rafts observed along a river**.
+
+To fit the Poisson Hidden Markov Model we use R scripts provided as an annex to the book @zucchini_mcdonald_2009 and provided in the current repo under scripts:
+
+```{r setup, echo=FALSE, message=FALSE}
+library(tidyverse)
+```
+
+
+```{r script_zucchini_mcdonald}
+source("scripts/scripts_Zucchini_and_McDonald_2009.R")
+```
 
 ```{r, message=FALSE}
-source("scripts/scripts_Zucchini_and_McDonald_2009.R")
 # number of wood rafts
-data= readr::read_csv("data/wood_abundance.csv")
-pk=data$PK
-x=data$nbre_embacle
+woodrafts= readr::read_csv("data/wood_abundance.csv")
+pk=woodrafts$PK
+x=woodrafts$nbre_embacle
 ```
 
 ```{r wood, fig.width=9, fig.height=3}
 #| label: wood
 #| fig-cap: "An example of observation series: occurrence of wood  500 meter-long sections of the river."
-plot(x, type="l")
+ggplot(woodrafts, aes(x=pk, y=nbre_embacle))+
+  geom_path()
 ```
 
-```{r}
-lambda0=c(10,3,80)
+## Initial parameters
+
+We will initialize a HMM with three states, corresponding to a **distribution of wood rafts with an average outcome** that is:
+
+-   low ($\lambda$=3)
+
+-   medium ($\lambda$=10)
+
+-   high ($\lambda$=20)
+
+```{r init_lambda0}
+lambda0=c(3,10,20)
+```
+
+The corresponding distributions look like this:
+
+```{r, echo=FALSE}
+prob_Poisson=tibble::tibble(lambda=lambda0,
+                            data=purrr::map(lambda,~tibble(x=0:35,
+                                            pr_x=dpois(0:35,.x)))) %>% 
+  tidyr::unnest(data)
+ggplot(prob_Poisson, aes(x=x,y=pr_x))+
+  geom_bar(stat="identity")+
+  facet_grid(rows=vars(lambda))
+```
+Now, let's initialize the transition matrix (with 3 rows and 3 columns since we consider three possible states). We make it such that the transition from one state to another is rather low (5% total):
+
+```{r initialize_gamma0}
 gamma0=matrix(rep(0.025,9),nrow=3)
 diag(gamma0)=0.95
-parvect=pois.HMM.pn2pw(m=3,lambda=lambda0,gamma=gamma0)
-fitted.HMM=pois.HMM.mle(x,m=3,lambda0,gamma0)
+gamma0
 ```
 
+We now have defined all necessary parameters:
+
+```{def_parvect}
+parvect=pois.HMM.pn2pw(m=3,lambda=lambda0,gamma=gamma0)
+```
+
+## Fitting the model
+
+Now, let us fit the model through maximum likelihood estimation:
+
 ```{r}
-print(fitted.HMM)
+fitted_HMM_ML=pois.HMM.mle(x,m=3,lambda0,gamma0)
+```
+
+
+```{r}
+fitted_HMM_ML
 ```
 
 ```{r simwood, fig.width=9, fig.height=3}
 #| fig-cap: "An example of simulated series: possible occurrence of wood rafts according to fitted model."
-xsim=pois.HMM.generate_sample(n=length(x),m=3,lambda=fitted.HMM$lambda,fitted.HMM$gamma)
-plot(xsim, type="l")
+woodrafts <- woodrafts %>% 
+  mutate(xsim=pois.HMM.generate_sample(n=n(),
+                                       m=3,
+                                       lambda=fitted_HMM_ML$lambda,
+                                       gamma=fitted_HMM_ML$gamma))
+ggplot(woodrafts, aes(x=pk, y=xsim))+
+  geom_path()
 ```
+
+Other methods for fitting a model exist:
 
 ```{r}
-fitted.HMM.EM=pois.HMM.EM(x,m=3,fitted.HMM$lambda,fitted.HMM$gamma, delta=NULL)
+fitted_HMM_EM=pois.HMM.EM(x,m=3,fitted_HMM_ML$lambda,fitted_HMM_ML$gamma, delta=NULL)
+fitted_HMM_EM
+```
+We can now associate the states with the estimates of mean outcome $\hat\lambda_i$:
+
+```{r hat_lambda}
+tib_states=tibble::tibble(states=1:3,
+                          lambda_est=fitted_HMM_EM$lambda)
+tib_states
 ```
 
-```{r}
-states=pois.HMM.viterbi(x,m=3,lambda=fitted.HMM.EM$lambda,fitted.HMM.EM$gamma,delta=NULL)
-print(states)
+
+```{r join_states}
+woodrafts <- woodrafts %>% 
+  mutate(states=pois.HMM.viterbi(x,
+                                 m=3,
+                                 lambda=fitted_HMM_EM$lambda,
+                                 fitted_HMM_EM$gamma,
+                                 delta=NULL)) %>% 
+  left_join(tib_states,by=c("states"))
+head(woodrafts)
 ```
 
-```{r hiddenstates, fig.width=9, fig.height=6}
-#|fig-cap:"Hidden states"
-layout(matrix(1:2, nrow=2))
-plot(pk,x,type="l", main="number of wood rafts ")
-plot(pk,x, type="l")
-points(pk,fitted.HMM.EM$lambda[states], col="red", type="l", lty=2)
+```{r hiddenstates, fig.width=9, fig.height=3}
+#|fig-cap: "Series of observed data (plain black line) and estimated hidden states (red dotted line)"
+ggplot(woodrafts, aes(x=pk,y=nbre_embacle))+
+  geom_path()+
+  geom_line(aes(y=lambda_est), col="red",linetype=3)
 ```
 
-# The 2 states
+## Considering two states
 
 ```{r}
 m=2

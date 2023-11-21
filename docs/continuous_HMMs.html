@@ -54,7 +54,26 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -96,6 +115,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="style.css">
 </head>
@@ -186,8 +207,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">6</span> Introduction</a></li>
-  <li><a href="#the-2-states" id="toc-the-2-states" class="nav-link" data-scroll-target="#the-2-states"><span class="header-section-number">7</span> The 2 states</a></li>
+  <li><a href="#initial-parameters" id="toc-initial-parameters" class="nav-link active" data-scroll-target="#initial-parameters"><span class="header-section-number">5.1</span> Initial parameters</a></li>
+  <li><a href="#fitting-the-model" id="toc-fitting-the-model" class="nav-link" data-scroll-target="#fitting-the-model"><span class="header-section-number">5.2</span> Fitting the model</a></li>
+  <li><a href="#considering-two-states" id="toc-considering-two-states" class="nav-link" data-scroll-target="#considering-two-states"><span class="header-section-number">5.3</span> Considering two states</a></li>
   </ul>
 </nav>
     </div>
@@ -211,17 +233,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<section id="introduction" class="level1" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> Introduction</h1>
+<p>Although states in Hidden Markov Models are by definition categorical, the observations might be quantitative rather than categorical. In these cases the HMM might be called continuous observations HMMs or <strong>continuous HMMs</strong> (though the quantitative outputs might actually have discrete or pseudo-continous distributions).</p>
+<p>We will illustrate such a model in the case of a Poisson distribution. To do so we will consider an <strong>observed series consisting of the number of wood rafts observed along a river</strong>.</p>
+<p>To fit the Poisson Hidden Markov Model we use R scripts provided as an annex to the book <span class="citation" data-cites="zucchini_mcdonald_2009">Zucchini and MacDonald (<a href="references.html#ref-zucchini_mcdonald_2009" role="doc-biblioref">2009</a>)</span> and provided in the current repo under scripts:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"scripts/scripts_Zucchini_and_McDonald_2009.R"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># number of wood rafts</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>data<span class="ot">=</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"data/wood_abundance.csv"</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>pk<span class="ot">=</span>data<span class="sc">$</span>PK</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>x<span class="ot">=</span>data<span class="sc">$</span>nbre_embacle</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"scripts/scripts_Zucchini_and_McDonald_2009.R"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x, <span class="at">type=</span><span class="st">"l"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># number of wood rafts</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>woodrafts<span class="ot">=</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"data/wood_abundance.csv"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>pk<span class="ot">=</span>woodrafts<span class="sc">$</span>PK</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>x<span class="ot">=</span>woodrafts<span class="sc">$</span>nbre_embacle</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(woodrafts, <span class="fu">aes</span>(<span class="at">x=</span>pk, <span class="at">y=</span>nbre_embacle))<span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -231,31 +257,60 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+<section id="initial-parameters" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="initial-parameters"><span class="header-section-number">5.1</span> Initial parameters</h2>
+<p>We will initialize a HMM with three states, corresponding to a <strong>distribution of wood rafts with an average outcome</strong> that is:</p>
+<ul>
+<li><p>low (<span class="math inline">\(\lambda\)</span>=3)</p></li>
+<li><p>medium (<span class="math inline">\(\lambda\)</span>=10)</p></li>
+<li><p>high (<span class="math inline">\(\lambda\)</span>=20)</p></li>
+</ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>lambda0<span class="ot">=</span><span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">3</span>,<span class="dv">80</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>gamma0<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="fl">0.025</span>,<span class="dv">9</span>),<span class="at">nrow=</span><span class="dv">3</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(gamma0)<span class="ot">=</span><span class="fl">0.95</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>parvect<span class="ot">=</span><span class="fu">pois.HMM.pn2pw</span>(<span class="at">m=</span><span class="dv">3</span>,<span class="at">lambda=</span>lambda0,<span class="at">gamma=</span>gamma0)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>fitted.HMM<span class="ot">=</span><span class="fu">pois.HMM.mle</span>(x,<span class="at">m=</span><span class="dv">3</span>,lambda0,gamma0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in nlm(pois.HMM.mllk, parvect0, x = x, m = m): NA / Inf remplacé par la
-valeur maximale positive</code></pre>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>lambda0<span class="ot">=</span><span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">10</span>,<span class="dv">20</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The corresponding distributions look like this:</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="continuous_HMMs_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<p>Now, let’s initialize the transition matrix (with 3 rows and 3 columns since we consider three possible states). We make it such that the transition from one state to another is rather low (5% total):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fitted.HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>gamma0<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="fl">0.025</span>,<span class="dv">9</span>),<span class="at">nrow=</span><span class="dv">3</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(gamma0)<span class="ot">=</span><span class="fl">0.95</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>gamma0</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      [,1]  [,2]  [,3]
+[1,] 0.950 0.025 0.025
+[2,] 0.025 0.950 0.025
+[3,] 0.025 0.025 0.950</code></pre>
+</div>
+</div>
+<p>We now have defined all necessary parameters:</p>
+<div class="cell">
+<pre class="def_parvect cell-code"><code>parvect=pois.HMM.pn2pw(m=3,lambda=lambda0,gamma=gamma0)</code></pre>
+</div>
+</section>
+<section id="fitting-the-model" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="fitting-the-model"><span class="header-section-number">5.2</span> Fitting the model</h2>
+<p>Now, let us fit the model through maximum likelihood estimation:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fitted_HMM_ML<span class="ot">=</span><span class="fu">pois.HMM.mle</span>(x,<span class="at">m=</span><span class="dv">3</span>,lambda0,gamma0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fitted_HMM_ML</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$lambda
-[1] 34.177617  2.585169 12.725369
+[1]  2.585161 12.725351 34.177599
 
 $gamma
           [,1]      [,2]      [,3]
-[1,] 0.2216705 0.4205523 0.3577771
-[2,] 0.1159837 0.4795673 0.4044491
-[3,] 0.1957610 0.3936675 0.4105716
+[1,] 0.4795649 0.4044502 0.1159850
+[2,] 0.3936670 0.4105721 0.1957609
+[3,] 0.4205519 0.3577776 0.2216705
 
 $delta
-[1] 0.1652990 0.4355228 0.3991782
+[1] 0.4355214 0.3991789 0.1652996
 
 $code
 NULL
@@ -271,8 +326,13 @@ $BIC
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>xsim<span class="ot">=</span><span class="fu">pois.HMM.generate_sample</span>(<span class="at">n=</span><span class="fu">length</span>(x),<span class="at">m=</span><span class="dv">3</span>,<span class="at">lambda=</span>fitted.HMM<span class="sc">$</span>lambda,fitted.HMM<span class="sc">$</span>gamma)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(xsim, <span class="at">type=</span><span class="st">"l"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>woodrafts <span class="ot">&lt;-</span> woodrafts <span class="sc">%&gt;%</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">xsim=</span><span class="fu">pois.HMM.generate_sample</span>(<span class="at">n=</span><span class="fu">n</span>(),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">m=</span><span class="dv">3</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">lambda=</span>fitted_HMM_ML<span class="sc">$</span>lambda,</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                                       <span class="at">gamma=</span>fitted_HMM_ML<span class="sc">$</span>gamma))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(woodrafts, <span class="fu">aes</span>(<span class="at">x=</span>pk, <span class="at">y=</span>xsim))<span class="sc">+</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -282,48 +342,94 @@ $BIC
 </div>
 </div>
 </div>
+<p>Other methods for fitting a model exist:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fitted.HMM.EM<span class="ot">=</span><span class="fu">pois.HMM.EM</span>(x,<span class="at">m=</span><span class="dv">3</span>,fitted.HMM<span class="sc">$</span>lambda,fitted.HMM<span class="sc">$</span>gamma, <span class="at">delta=</span><span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>states<span class="ot">=</span><span class="fu">pois.HMM.viterbi</span>(x,<span class="at">m=</span><span class="dv">3</span>,<span class="at">lambda=</span>fitted.HMM.EM<span class="sc">$</span>lambda,fitted.HMM.EM<span class="sc">$</span>gamma,<span class="at">delta=</span><span class="cn">NULL</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(states)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fitted_HMM_EM<span class="ot">=</span><span class="fu">pois.HMM.EM</span>(x,<span class="at">m=</span><span class="dv">3</span>,fitted_HMM_ML<span class="sc">$</span>lambda,fitted_HMM_ML<span class="sc">$</span>gamma, <span class="at">delta=</span><span class="cn">NULL</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>fitted_HMM_EM</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>  [1] 2 2 2 1 2 2 2 3 2 3 3 3 2 2 1 3 2 3 3 3 1 3 2 3 2 3 2 2 3 2 3 3 3 2 3 3 2
- [38] 3 2 2 1 2 2 2 2 3 3 3 2 2 2 2 2 3 2 1 2 3 3 2 3 3 2 2 2 2 2 3 2 2 2 3 2 3
- [75] 2 2 2 3 2 2 2 2 2 3 2 3 2 1 2 3 1 1 3 3 1 3 3 3 1 3 2 1 3 3 1 1 2 2 3 3 3
-[112] 2 3 2 2 1 2 2 3 2 3 3 3 2 3 3 3 3 3 2 3 1 3 1 2 3 3 1 2 1 3 1 2 3 1 1 3 1
-[149] 2 3 1 3 3 1 1 1 1 1 3 1 2 2 2 2 3 2 3 1 2 3 3 2 3 3 3 3 1 2 2 2 1 2 2 2 2
-[186] 2 2 2</code></pre>
+<pre><code>$lambda
+[1]  2.554198 12.650083 34.117710
+
+$gamma
+          [,1]      [,2]      [,3]
+[1,] 0.4713464 0.4115508 0.1171027
+[2,] 0.3895688 0.4127975 0.1976337
+[3,] 0.4128963 0.3641187 0.2229850
+
+$delta
+[1] 1 0 0
+
+$mllk
+[1] 690.5085
+
+$AIC
+[1] 1403.017
+
+$BIC
+[1] 1438.618</code></pre>
+</div>
+</div>
+<p>We can now associate the states with the estimates of mean outcome <span class="math inline">\(\hat\lambda_i\)</span>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>tib_states<span class="ot">=</span>tibble<span class="sc">::</span><span class="fu">tibble</span>(<span class="at">states=</span><span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>,</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                          <span class="at">lambda_est=</span>fitted_HMM_EM<span class="sc">$</span>lambda)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>tib_states</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+  states lambda_est
+   &lt;int&gt;      &lt;dbl&gt;
+1      1       2.55
+2      2      12.7 
+3      3      34.1 </code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|fig-cap:"Hidden states"</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">layout</span>(<span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">nrow=</span><span class="dv">2</span>))</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pk,x,<span class="at">type=</span><span class="st">"l"</span>, <span class="at">main=</span><span class="st">"number of wood rafts "</span>)</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pk,x, <span class="at">type=</span><span class="st">"l"</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(pk,fitted.HMM.EM<span class="sc">$</span>lambda[states], <span class="at">col=</span><span class="st">"red"</span>, <span class="at">type=</span><span class="st">"l"</span>, <span class="at">lty=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>woodrafts <span class="ot">&lt;-</span> woodrafts <span class="sc">%&gt;%</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">states=</span><span class="fu">pois.HMM.viterbi</span>(x,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">m=</span><span class="dv">3</span>,</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">lambda=</span>fitted_HMM_EM<span class="sc">$</span>lambda,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>                                 fitted_HMM_EM<span class="sc">$</span>gamma,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">delta=</span><span class="cn">NULL</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(tib_states,<span class="at">by=</span><span class="fu">c</span>(<span class="st">"states"</span>))</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(woodrafts)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+     PK nbre_embacle  xsim states lambda_est
+  &lt;dbl&gt;        &lt;dbl&gt; &lt;int&gt;  &lt;dbl&gt;      &lt;dbl&gt;
+1     0            1     2      1       2.55
+2     0            0     1      1       2.55
+3     1            3    39      1       2.55
+4     1           58    35      3      34.1 
+5     2            3    24      1       2.55
+6     2            2     2      1       2.55</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|fig-cap: "Series of observed data (plain black line) and estimated hidden states (red dotted line)"</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(woodrafts, <span class="fu">aes</span>(<span class="at">x=</span>pk,<span class="at">y=</span>nbre_embacle))<span class="sc">+</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>()<span class="sc">+</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">y=</span>lambda_est), <span class="at">col=</span><span class="st">"red"</span>,<span class="at">linetype=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <p><img src="continuous_HMMs_files/figure-html/hiddenstates-1.png" class="img-fluid" width="864"></p>
 </div>
 </div>
 </section>
-<section id="the-2-states" class="level1" data-number="7">
-<h1 data-number="7"><span class="header-section-number">7</span> The 2 states</h1>
+<section id="considering-two-states" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="considering-two-states"><span class="header-section-number">5.3</span> Considering two states</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>m<span class="ot">=</span><span class="dv">2</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>lambda0<span class="ot">=</span><span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">80</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>gamma0<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="fl">0.025</span>,m<span class="sc">^</span><span class="dv">2</span>),<span class="at">nrow=</span>m)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(gamma0)<span class="ot">=</span><span class="fl">0.95</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>parvect<span class="ot">=</span><span class="fu">pois.HMM.pn2pw</span>(<span class="at">m=</span>m,<span class="at">lambda=</span>lambda0,<span class="at">gamma=</span>gamma0)</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>fitted.HMM<span class="ot">=</span><span class="fu">pois.HMM.mle</span>(x,<span class="at">m=</span>m,lambda0,gamma0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>m<span class="ot">=</span><span class="dv">2</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>lambda0<span class="ot">=</span><span class="fu">c</span>(<span class="dv">10</span>,<span class="dv">80</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>gamma0<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">rep</span>(<span class="fl">0.025</span>,m<span class="sc">^</span><span class="dv">2</span>),<span class="at">nrow=</span>m)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(gamma0)<span class="ot">=</span><span class="fl">0.95</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>parvect<span class="ot">=</span><span class="fu">pois.HMM.pn2pw</span>(<span class="at">m=</span>m,<span class="at">lambda=</span>lambda0,<span class="at">gamma=</span>gamma0)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>fitted.HMM<span class="ot">=</span><span class="fu">pois.HMM.mle</span>(x,<span class="at">m=</span>m,lambda0,gamma0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in nlm(pois.HMM.mllk, parvect0, x = x, m = m): NA / Inf remplacé par la
 valeur maximale positive</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fitted.HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(fitted.HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$lambda
 [1]  4.186209 23.368149
@@ -350,11 +456,11 @@ $BIC
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>fitted.HMM.EM<span class="ot">=</span><span class="fu">pois.HMM.EM</span>(x,<span class="at">m=</span>m,fitted.HMM<span class="sc">$</span>lambda,fitted.HMM<span class="sc">$</span>gamma, <span class="at">delta=</span><span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>fitted.HMM.EM<span class="ot">=</span><span class="fu">pois.HMM.EM</span>(x,<span class="at">m=</span>m,fitted.HMM<span class="sc">$</span>lambda,fitted.HMM<span class="sc">$</span>gamma, <span class="at">delta=</span><span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>states<span class="ot">=</span><span class="fu">pois.HMM.viterbi</span>(x,<span class="at">m=</span>m,<span class="at">lambda=</span>fitted.HMM.EM<span class="sc">$</span>lambda,fitted.HMM.EM<span class="sc">$</span>gamma,<span class="at">delta=</span><span class="cn">NULL</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(states)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>states<span class="ot">=</span><span class="fu">pois.HMM.viterbi</span>(x,<span class="at">m=</span>m,<span class="at">lambda=</span>fitted.HMM.EM<span class="sc">$</span>lambda,fitted.HMM.EM<span class="sc">$</span>gamma,<span class="at">delta=</span><span class="cn">NULL</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(states)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  [1] 1 1 1 2 1 1 1 2 1 1 1 2 1 1 2 2 1 1 2 2 2 1 1 1 1 1 1 1 2 1 2 2 2 1 1 1 1
  [38] 1 1 1 2 1 1 1 1 1 2 2 1 1 1 1 1 2 1 2 1 2 2 1 2 2 1 1 1 1 1 2 1 1 1 1 1 1
@@ -365,16 +471,21 @@ $BIC
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">layout</span>(<span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">nrow=</span><span class="dv">2</span>))</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pk,x,<span class="at">type=</span><span class="st">"l"</span>, <span class="at">main=</span><span class="st">"number of wood rafts "</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pk,x, <span class="at">type=</span><span class="st">"l"</span>)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(pk,fitted.HMM.EM<span class="sc">$</span>lambda[states], <span class="at">col=</span><span class="st">"red"</span>, <span class="at">type=</span><span class="st">"l"</span>, <span class="at">lty=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">layout</span>(<span class="fu">matrix</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="at">nrow=</span><span class="dv">2</span>))</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pk,x,<span class="at">type=</span><span class="st">"l"</span>, <span class="at">main=</span><span class="st">"number of wood rafts "</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(pk,x, <span class="at">type=</span><span class="st">"l"</span>)</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">points</span>(pk,fitted.HMM.EM<span class="sc">$</span>lambda[states], <span class="at">col=</span><span class="st">"red"</span>, <span class="at">type=</span><span class="st">"l"</span>, <span class="at">lty=</span><span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="continuous_HMMs_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="864"></p>
+<p><img src="continuous_HMMs_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="864"></p>
 </div>
 </div>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-zucchini_mcdonald_2009" class="csl-entry" role="listitem">
+Zucchini, W., and I. L. MacDonald. 2009. <em>Hidden Markov Models for Time Series: An Introduction Using r, 1st Edition</em>. Chapman &amp; Hall/CRC Monographs on St,atistics and Applied Probability. CRC Press. https://doi.org/<a href="https://doi.org/10.1201/9781420010893">https://doi.org/10.1201/9781420010893</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->
