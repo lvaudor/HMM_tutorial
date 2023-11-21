@@ -1,6 +1,6 @@
 # Fitting a HMM {#sec-baumwelch}
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE}
 library(dplyr)
 wood<- read.csv("data/wood.csv", sep=";", header=T)
 pw=length(which(wood$obsWood=="wood"))/length(wood$obsWood)

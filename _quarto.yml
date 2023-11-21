@@ -12,6 +12,7 @@ book:
     - fitting.qmd
     - hidden_states.qmd
     - case_studies.qmd
+    - continuous_HMMs.qmd
     - references.qmd
 
 bibliography: references.bib

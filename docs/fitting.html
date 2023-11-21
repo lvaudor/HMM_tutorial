@@ -168,6 +168,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./continuous_HMMs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Continuous Hidden Markov Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">References</span></a>
   </div>
@@ -213,22 +219,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attachement du package : 'dplyr'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Les objets suivants sont masqués depuis 'package:stats':
-
-    filter, lag</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Les objets suivants sont masqués depuis 'package:base':
-
-    intersect, setdiff, setequal, union</code></pre>
-</div>
-</div>
 <section id="the-baum-welch-algorithm" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="the-baum-welch-algorithm"><span class="header-section-number">2.1</span> The Baum-Welch algorithm</h2>
 <p>The Baum–Welch algorithm is used to find the unknown parameters <span class="math inline">\(\theta = (T,E,\pi)\)</span> of a HMM, which maximizes the probability of the observation series.</p>
@@ -363,16 +353,16 @@ pr(X,S_k=i,S_{k+1}=j)/\theta) = pr(X_1,X_2,...,X_k, S_k=i/\theta)* pr(X_{k+1}, S
 <h2 data-number="2.2" class="anchored" data-anchor-id="fitting-a-hmm-in-practice"><span class="header-section-number">2.2</span> Fitting a HMM in practice</h2>
 <p>Let’s go back to the wood occurrence series. We will use the Baum-Welch algorithm to fit a HMM with two hidden states, H and L, defined as “High occurrence frequency state” and “Low occurrence frequency state”. To do this, we will use the function “baumWelch” from the “HMM” R package.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>As we have seen, the Baum-Welch algorithm iteratively adjusts the parameter values <span class="math inline">\(\theta\)</span> to maximize likelihood. Thus we have to <em>initialize</em> the algorithm with a prior estimate of <span class="math inline">\(\theta\)</span>.</p>
 <p>We could, for instance, consider that the two states we are interested in are not very contrasted (let’s talk of uncontrasted states -UCS- from now on), and that transition probabilities are quite low (low transition probabilities: LTP). Here, we will hence consider that the H state is characterized by +5% chances of getting wood, and the L state is characterized by -5% chances of getting wood (compared to the overal frequency of 46.81%).</p>
 <p>Thus we can write the “UCS” emission matrix this way:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>M_UCS<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">-</span>(pw<span class="fl">-0.05</span>),<span class="dv">1</span><span class="sc">-</span>(pw<span class="fl">+0.05</span>),pw<span class="fl">-0.05</span>,(pw<span class="fl">+0.05</span>)),<span class="dv">2</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_UCS)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_UCS)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(M_UCS,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>M_UCS<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">-</span>(pw<span class="fl">-0.05</span>),<span class="dv">1</span><span class="sc">-</span>(pw<span class="fl">+0.05</span>),pw<span class="fl">-0.05</span>,(pw<span class="fl">+0.05</span>)),<span class="dv">2</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_UCS)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_UCS)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(M_UCS,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  nothing wood
 L    0.58 0.42
@@ -382,10 +372,10 @@ H    0.48 0.52</code></pre>
 <p>We will also consider that at each time, there is only 10% chances to change from state L to state H, or from state H to state L.</p>
 <p>Thus we can write the “LTP” transition matrix this way:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>M_LTP<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(.<span class="dv">9</span>,.<span class="dv">1</span>,.<span class="dv">1</span>,.<span class="dv">9</span>),<span class="dv">2</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_LTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_LTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(M_LTP)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>M_LTP<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(.<span class="dv">9</span>,.<span class="dv">1</span>,.<span class="dv">1</span>,.<span class="dv">9</span>),<span class="dv">2</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_LTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_LTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(M_LTP)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    L   H
 L 0.9 0.1
@@ -394,11 +384,11 @@ H 0.1 0.9</code></pre>
 </div>
 <p>The initialization of the HMM is done through:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>initial_HMM<span class="ot">=</span><span class="fu">initHMM</span>(<span class="at">States=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">Symbols=</span><span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">transProbs=</span>M_LTP,</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">emissionProbs=</span>M_UCS)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(initial_HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>initial_HMM<span class="ot">=</span><span class="fu">initHMM</span>(<span class="at">States=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                    <span class="at">Symbols=</span><span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                    <span class="at">transProbs=</span>M_LTP,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                    <span class="at">emissionProbs=</span>M_UCS)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(initial_HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$States
 [1] "L" "H"
@@ -426,12 +416,12 @@ states   nothing      wood
 <p>i.e.&nbsp;the states (L or H), and outcomes (“nothing” or “wood”) are defined, and initial values are set to the transition and emission matrices.</p>
 <p>The various elements of the object <code>initial_HMM</code> can be accessed (as is the usual way with R lists) through:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(initial_HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(initial_HMM)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "States"        "Symbols"       "startProbs"    "transProbs"   
 [5] "emissionProbs"</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(initial_HMM<span class="sc">$</span>emissionProbs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(initial_HMM<span class="sc">$</span>emissionProbs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      symbols
 states   nothing      wood
@@ -441,8 +431,8 @@ states   nothing      wood
 </div>
 <p>Then the optimization can be carried out through:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>hmm_fit_1<span class="ot">=</span> <span class="fu">baumWelch</span>(initial_HMM,obsWood,<span class="at">maxIterations=</span><span class="dv">100</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(hmm_fit_1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>hmm_fit_1<span class="ot">=</span> <span class="fu">baumWelch</span>(initial_HMM,obsWood,<span class="at">maxIterations=</span><span class="dv">100</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(hmm_fit_1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$hmm
 $hmm$States
@@ -488,10 +478,10 @@ $difference
 <p>According to how we initialize the HMM, we could get different results… Indeed, the Baum-Welch algorithm converges to a local solution which might not be the global optimum (i.e., according to the initial values of the matrices, we could get different results).</p>
 <p>Hence, let us consider different initial parameterizations. In our first example we had considered states that were quite uncontrasted (there was only +10% chances of observing some wood in state H compared to state L). Alternatively, we could consider quite contrasted states (e.g.&nbsp;with +40% chances of observing some wood in state H compared to state L):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>M_CS<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">-</span>(pw<span class="fl">-0.40</span>),<span class="dv">1</span><span class="sc">-</span>(pw<span class="fl">+0.40</span>),pw<span class="fl">-0.40</span>,(pw<span class="fl">+0.40</span>)),<span class="dv">2</span>)</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_CS)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_CS)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>)</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(M_CS,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>M_CS<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">-</span>(pw<span class="fl">-0.40</span>),<span class="dv">1</span><span class="sc">-</span>(pw<span class="fl">+0.40</span>),pw<span class="fl">-0.40</span>,(pw<span class="fl">+0.40</span>)),<span class="dv">2</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_CS)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_CS)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(M_CS,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  nothing wood
 L    0.93 0.07
@@ -500,10 +490,10 @@ H    0.13 0.87</code></pre>
 </div>
 <p>In our first example we also considered that there were few chances to change from one state from another, i.e.&nbsp;we used low transition probabilities. Alternatively, we could consider <strong>higher transition probabilities (HTP)</strong>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>M_HTP<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(.<span class="dv">5</span>,.<span class="dv">5</span>,.<span class="dv">5</span>,.<span class="dv">5</span>),<span class="dv">2</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_HTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_HTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(M_HTP)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>M_HTP<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(.<span class="dv">5</span>,.<span class="dv">5</span>,.<span class="dv">5</span>,.<span class="dv">5</span>),<span class="dv">2</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_HTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_HTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(M_HTP)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    L   H
 L 0.5 0.5
@@ -512,64 +502,64 @@ H 0.5 0.5</code></pre>
 </div>
 <p>Let’s initialize our HMM in various ways with matrices <code>M_LTP</code> vs <code>M_HTP</code> for transition probabilities and <code>M_CS</code> vs <code>M_UCS</code> for emission probabilities (i.e.&nbsp;4 possibilities):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># FIRST CASE: starting from M_LTP and M_UCS</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>hmm_init_LTP_UCS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_LTP,</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_UCS)</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co"># SECOND CASE: starting from M_LTP and M_CS</span></span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>hmm_init_LTP_CS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_LTP,</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_CS)</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="co"># THIRD CASE: starting from M_HTP and M_UCS</span></span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>hmm_init_HTP_UCS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_HTP,</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_UCS)</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co"># FOURTH CASE: starting from M_HTP and M_CS</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>hmm_init_HTP_CS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_HTP,</span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_CS)</span>
-<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>list_hmm_init<span class="ot">=</span><span class="fu">list</span>(hmm_init_LTP_UCS,</span>
-<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>                   hmm_init_LTP_CS,</span>
-<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>                   hmm_init_HTP_UCS,</span>
-<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>                   hmm_init_HTP_CS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># FIRST CASE: starting from M_LTP and M_UCS</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>hmm_init_LTP_UCS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_LTP,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_UCS)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># SECOND CASE: starting from M_LTP and M_CS</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>hmm_init_LTP_CS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_LTP,</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_CS)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="co"># THIRD CASE: starting from M_HTP and M_UCS</span></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>hmm_init_HTP_UCS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_HTP,</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_UCS)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="co"># FOURTH CASE: starting from M_HTP and M_CS</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>hmm_init_HTP_CS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_HTP,</span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_CS)</span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a>list_hmm_init<span class="ot">=</span><span class="fu">list</span>(hmm_init_LTP_UCS,</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>                   hmm_init_LTP_CS,</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>                   hmm_init_HTP_UCS,</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>                   hmm_init_HTP_CS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now the HMM are fitted (with various initial parameterizations):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>hmm_fit_LTP_UCS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_LTP_UCS,obsWood)<span class="sc">$</span>hmm</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>hmm_fit_LTP_CS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_LTP_CS,obsWood)<span class="sc">$</span>hmm</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>hmm_fit_HTP_UCS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_HTP_UCS,obsWood)<span class="sc">$</span>hmm</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>hmm_fit_HTP_CS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_HTP_CS,obsWood)<span class="sc">$</span>hmm</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>list_hmm_fit<span class="ot">=</span><span class="fu">list</span>(hmm_fit_LTP_UCS,</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>                  hmm_fit_LTP_CS,</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                  hmm_fit_HTP_UCS,</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                  hmm_fit_HTP_CS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>hmm_fit_LTP_UCS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_LTP_UCS,obsWood)<span class="sc">$</span>hmm</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>hmm_fit_LTP_CS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_LTP_CS,obsWood)<span class="sc">$</span>hmm</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>hmm_fit_HTP_UCS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_HTP_UCS,obsWood)<span class="sc">$</span>hmm</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>hmm_fit_HTP_CS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_HTP_CS,obsWood)<span class="sc">$</span>hmm</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>list_hmm_fit<span class="ot">=</span><span class="fu">list</span>(hmm_fit_LTP_UCS,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>                  hmm_fit_LTP_CS,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                  hmm_fit_HTP_UCS,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                  hmm_fit_HTP_CS)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Here are the transition matrices we get in the four cases:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_LTP_UCS<span class="sc">$</span>transProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_LTP_UCS<span class="sc">$</span>transProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    to
 from    L    H
    L 0.92 0.08
    H 0.10 0.90</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_LTP_CS<span class="sc">$</span>transProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_LTP_CS<span class="sc">$</span>transProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    to
 from    L    H
    L 0.92 0.08
    H 0.10 0.90</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_HTP_UCS<span class="sc">$</span>transProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_HTP_UCS<span class="sc">$</span>transProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    to
 from    L    H
    L 0.92 0.08
    H 0.10 0.90</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_HTP_CS<span class="sc">$</span>transProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_HTP_CS<span class="sc">$</span>transProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    to
 from    L    H
@@ -579,28 +569,28 @@ from    L    H
 </div>
 <p>Here are the emission matrices we get in the four cases:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_LTP_UCS<span class="sc">$</span>emissionProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_LTP_UCS<span class="sc">$</span>emissionProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      symbols
 states nothing wood
      L    0.90 0.10
      H    0.09 0.91</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_LTP_CS<span class="sc">$</span>emissionProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_LTP_CS<span class="sc">$</span>emissionProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      symbols
 states nothing wood
      L    0.90 0.10
      H    0.09 0.91</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_HTP_UCS<span class="sc">$</span>emissionProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_HTP_UCS<span class="sc">$</span>emissionProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      symbols
 states nothing wood
      L    0.90 0.10
      H    0.09 0.91</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_HTP_CS<span class="sc">$</span>emissionProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(hmm_fit_HTP_CS<span class="sc">$</span>emissionProbs,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      symbols
 states nothing wood
@@ -611,30 +601,30 @@ states nothing wood
 <p>In this particular case, we have obtained the same fits with all initial parameterizations (which is actually reassuring as it implies that the optimum we get is a “not-so-local” optimum).</p>
 <p>But if we had provided the Baum-Welch algorithm with a very different initial transition matrix (“VHTP” for “Very High Transition Probabilities”), e.g.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>M_VHTP<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(.<span class="dv">1</span>,.<span class="dv">9</span>,.<span class="dv">9</span>,.<span class="dv">1</span>),<span class="dv">2</span>)</span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_VHTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_VHTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(M_VHTP)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>M_VHTP<span class="ot">=</span><span class="fu">matrix</span>(<span class="fu">c</span>(.<span class="dv">1</span>,.<span class="dv">9</span>,.<span class="dv">9</span>,.<span class="dv">1</span>),<span class="dv">2</span>)</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(M_VHTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(M_VHTP)<span class="ot">=</span><span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>)</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(M_VHTP)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    L   H
 L 0.1 0.9
 H 0.9 0.1</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>hmm_init_VHTP_UCS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_VHTP,</span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_UCS)</span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>hmm_fit_VHTP_UCS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_VHTP_UCS,obsWood)<span class="sc">$</span>hmm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>hmm_init_VHTP_UCS <span class="ot">=</span> <span class="fu">initHMM</span>(<span class="fu">c</span>(<span class="st">"L"</span>,<span class="st">"H"</span>),<span class="fu">c</span>(<span class="st">"nothing"</span>,<span class="st">"wood"</span>),</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">transProbs=</span>M_VHTP,</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>                   <span class="at">emissionProbs=</span>M_UCS)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>hmm_fit_VHTP_UCS<span class="ot">=</span> <span class="fu">baumWelch</span>(hmm_init_VHTP_UCS,obsWood)<span class="sc">$</span>hmm</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>then we would have got the following fit:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>hmm_fit_VHTP_UCS<span class="sc">$</span>transProbs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>hmm_fit_VHTP_UCS<span class="sc">$</span>transProbs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    to
 from         L         H
    L 0.1005015 0.8994985
    H 0.8992563 0.1007437</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>hmm_fit_VHTP_UCS<span class="sc">$</span>emissionProbs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>hmm_fit_VHTP_UCS<span class="sc">$</span>emissionProbs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      symbols
 states   nothing      wood
