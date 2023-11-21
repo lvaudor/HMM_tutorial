@@ -1,0 +1,83 @@
+# Continuous Hidden Markov Models
+
+# Introduction
+
+```{r, message=FALSE}
+source("scripts/scripts_Zucchini_and_McDonald_2009.R")
+# number of wood rafts
+data= readr::read_csv("data/wood_abundance.csv")
+pk=data$PK
+x=data$nbre_embacle
+```
+
+```{r wood, fig.width=9, fig.height=3}
+#| label: wood
+#| fig-cap: "An example of observation series: occurrence of wood  500 meter-long sections of the river."
+plot(x, type="l")
+```
+
+```{r}
+lambda0=c(10,3,80)
+gamma0=matrix(rep(0.025,9),nrow=3)
+diag(gamma0)=0.95
+parvect=pois.HMM.pn2pw(m=3,lambda=lambda0,gamma=gamma0)
+fitted.HMM=pois.HMM.mle(x,m=3,lambda0,gamma0)
+```
+
+```{r}
+print(fitted.HMM)
+```
+
+```{r simwood, fig.width=9, fig.height=3}
+#| fig-cap: "An example of simulated series: possible occurrence of wood rafts according to fitted model."
+xsim=pois.HMM.generate_sample(n=length(x),m=3,lambda=fitted.HMM$lambda,fitted.HMM$gamma)
+plot(xsim, type="l")
+```
+
+```{r}
+fitted.HMM.EM=pois.HMM.EM(x,m=3,fitted.HMM$lambda,fitted.HMM$gamma, delta=NULL)
+```
+
+```{r}
+states=pois.HMM.viterbi(x,m=3,lambda=fitted.HMM.EM$lambda,fitted.HMM.EM$gamma,delta=NULL)
+print(states)
+```
+
+```{r hiddenstates, fig.width=9, fig.height=6}
+#|fig-cap:"Hidden states"
+layout(matrix(1:2, nrow=2))
+plot(pk,x,type="l", main="number of wood rafts ")
+plot(pk,x, type="l")
+points(pk,fitted.HMM.EM$lambda[states], col="red", type="l", lty=2)
+```
+
+# The 2 states
+
+```{r}
+m=2
+lambda0=c(10,80)
+gamma0=matrix(rep(0.025,m^2),nrow=m)
+diag(gamma0)=0.95
+parvect=pois.HMM.pn2pw(m=m,lambda=lambda0,gamma=gamma0)
+fitted.HMM=pois.HMM.mle(x,m=m,lambda0,gamma0)
+```
+
+```{r}
+print(fitted.HMM)
+```
+
+```{r}
+fitted.HMM.EM=pois.HMM.EM(x,m=m,fitted.HMM$lambda,fitted.HMM$gamma, delta=NULL)
+```
+
+```{r}
+states=pois.HMM.viterbi(x,m=m,lambda=fitted.HMM.EM$lambda,fitted.HMM.EM$gamma,delta=NULL)
+print(states)
+```
+
+```{r, fig.width=9, fig.height=6}
+layout(matrix(1:2, nrow=2))
+plot(pk,x,type="l", main="number of wood rafts ")
+plot(pk,x, type="l")
+points(pk,fitted.HMM.EM$lambda[states], col="red", type="l", lty=2)
+```
