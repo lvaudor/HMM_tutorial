@@ -168,6 +168,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./continuous_HMMs.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Continuous Hidden Markov Models</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./references.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">References</span></a>
   </div>
@@ -182,16 +188,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#a-generic-example-of-hmm-the-bags-and-balls-colors-series" id="toc-a-generic-example-of-hmm-the-bags-and-balls-colors-series" class="nav-link active" data-scroll-target="#a-generic-example-of-hmm-the-bags-and-balls-colors-series"><span class="header-section-number">1.1</span> A generic example of HMM: the bags and balls’ colors series</a></li>
-  <li><a href="#notations-associated-with-a-hmm" id="toc-notations-associated-with-a-hmm" class="nav-link" data-scroll-target="#notations-associated-with-a-hmm"><span class="header-section-number">1.2</span> Notations associated with a HMM</a>
+  <li><a href="#definition" id="toc-definition" class="nav-link active" data-scroll-target="#definition"><span class="header-section-number">1.1</span> Definition</a></li>
+  <li><a href="#a-generic-example-of-hmm-bags-and-balls" id="toc-a-generic-example-of-hmm-bags-and-balls" class="nav-link" data-scroll-target="#a-generic-example-of-hmm-bags-and-balls"><span class="header-section-number">1.2</span> A generic example of HMM: bags and balls</a></li>
+  <li><a href="#notations-associated-with-a-hmm" id="toc-notations-associated-with-a-hmm" class="nav-link" data-scroll-target="#notations-associated-with-a-hmm"><span class="header-section-number">1.3</span> Notations associated with a HMM</a>
   <ul class="collapse">
-  <li><a href="#transition-probabilities" id="toc-transition-probabilities" class="nav-link" data-scroll-target="#transition-probabilities"><span class="header-section-number">1.2.1</span> Transition probabilities</a></li>
-  <li><a href="#emission-probabilities" id="toc-emission-probabilities" class="nav-link" data-scroll-target="#emission-probabilities"><span class="header-section-number">1.2.2</span> Emission probabilities</a></li>
-  <li><a href="#initial-state-distribution" id="toc-initial-state-distribution" class="nav-link" data-scroll-target="#initial-state-distribution"><span class="header-section-number">1.2.3</span> Initial state distribution</a></li>
-  <li><a href="#parameters-of-a-hmm" id="toc-parameters-of-a-hmm" class="nav-link" data-scroll-target="#parameters-of-a-hmm"><span class="header-section-number">1.2.4</span> Parameters of a HMM</a></li>
+  <li><a href="#transition-probabilities" id="toc-transition-probabilities" class="nav-link" data-scroll-target="#transition-probabilities"><span class="header-section-number">1.3.1</span> Transition probabilities</a></li>
+  <li><a href="#emission-probabilities" id="toc-emission-probabilities" class="nav-link" data-scroll-target="#emission-probabilities"><span class="header-section-number">1.3.2</span> Emission probabilities</a></li>
+  <li><a href="#initial-state-distribution" id="toc-initial-state-distribution" class="nav-link" data-scroll-target="#initial-state-distribution"><span class="header-section-number">1.3.3</span> Initial state distribution</a></li>
+  <li><a href="#parameters-of-a-hmm" id="toc-parameters-of-a-hmm" class="nav-link" data-scroll-target="#parameters-of-a-hmm"><span class="header-section-number">1.3.4</span> Parameters of a HMM</a></li>
   </ul></li>
-  <li><a href="#questions-associated-to-a-hmm" id="toc-questions-associated-to-a-hmm" class="nav-link" data-scroll-target="#questions-associated-to-a-hmm"><span class="header-section-number">1.3</span> Questions associated to a HMM</a></li>
-  <li><a href="#a-practical-example-the-wood-occurrence-series" id="toc-a-practical-example-the-wood-occurrence-series" class="nav-link" data-scroll-target="#a-practical-example-the-wood-occurrence-series"><span class="header-section-number">1.4</span> A practical example: the wood occurrence series</a></li>
+  <li><a href="#questions-associated-to-a-hmm" id="toc-questions-associated-to-a-hmm" class="nav-link" data-scroll-target="#questions-associated-to-a-hmm"><span class="header-section-number">1.4</span> Questions associated to a HMM</a></li>
+  <li><a href="#a-practical-example-the-wood-occurrence-series" id="toc-a-practical-example-the-wood-occurrence-series" class="nav-link" data-scroll-target="#a-practical-example-the-wood-occurrence-series"><span class="header-section-number">1.5</span> A practical example: the wood occurrence series</a></li>
   </ul>
 </nav>
     </div>
@@ -215,15 +222,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<section id="a-generic-example-of-hmm-the-bags-and-balls-colors-series" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="a-generic-example-of-hmm-the-bags-and-balls-colors-series"><span class="header-section-number">1.1</span> A generic example of HMM: the bags and balls’ colors series</h2>
+<section id="definition" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="definition"><span class="header-section-number">1.1</span> Definition</h2>
+<p>Hidden Markov Models (HMMs) are models that apply to situations where a <strong>sequence of observable outputs</strong> (e.g.&nbsp;time or spatial series) are generated by <strong>hidden states</strong>.</p>
+<p>They consist of two processes, a Markov transition process that describes the series of hidden states, and an emission process that describes the series of outputs produced by the system. This process is such that the probability of observing an output at a given point in the series depends only on the current hidden state.</p>
+</section>
+<section id="a-generic-example-of-hmm-bags-and-balls" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="a-generic-example-of-hmm-bags-and-balls"><span class="header-section-number">1.2</span> A generic example of HMM: bags and balls</h2>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="img/operator_and_states.png" class="img-fluid figure-img"></p>
 <figcaption class="figure-caption">An example of Hidden Markov Model with two states (bag A and bag B) and two outcomes (red ball -R- or white ball -W).</figcaption>
 </figure>
 </div>
-<p>Let’s consider the following example (which we will refer to as the **bags and balls’s colors example*}** throughout this tutorial).</p>
+<p>Let’s consider the following example of HMM (which we will refer to as the <strong>bags and balls example</strong> throughout this tutorial).</p>
 <p>An operator has two bags, A et B, filled with either red or white balls in different proportions. He carries out the following experiment:</p>
 <ul>
 <li>He chooses one bag out of the two</li>
@@ -243,14 +255,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </figure>
 </div>
 </section>
-<section id="notations-associated-with-a-hmm" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="notations-associated-with-a-hmm"><span class="header-section-number">1.2</span> Notations associated with a HMM</h2>
-<p>Finally we know the series <span class="math inline">\(X=(X_1,X_2,X_3,...,X_n)\)</span> which corresponds, in the bags and balls’ colors example, to the <strong>balls’ colors</strong> (i.e.&nbsp;the <strong>observations</strong> series). The two possible <strong>outcomes</strong> are “red” (R) or “white” (W). On the other hand, we do not know the series <span class="math inline">\(S=(S_1,S_2,S_3,...S_n)\)</span> which corresponds to the <strong>names of the bags</strong> out of which the balls have been drawn (i.e.&nbsp;the <strong>hidden states</strong> series)</p>
+<section id="notations-associated-with-a-hmm" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="notations-associated-with-a-hmm"><span class="header-section-number">1.3</span> Notations associated with a HMM</h2>
+<p>Finally we know the series <span class="math inline">\(X=(X_1,X_2,X_3,...,X_n)\)</span> which corresponds, in the bags and balls example, to the <strong>balls’ colors</strong> (i.e.&nbsp;the <strong>observations</strong> series). The two possible <strong>outcomes</strong> are “red” (R) or “white” (W). On the other hand, we do not know the series <span class="math inline">\(S=(S_1,S_2,S_3,...S_n)\)</span> which corresponds to the <strong>names of the bags</strong> out of which the balls have been drawn (i.e.&nbsp;the <strong>hidden states</strong> series)</p>
 <p>Here, the possible hidden states are either <span class="math inline">\(S_k=A\)</span> ou <span class="math inline">\(S_k=B\)</span> and the possible outcomes are either <span class="math inline">\(X_k=R\)</span> ou <span class="math inline">\(X_k=W\)</span>.</p>
-<section id="transition-probabilities" class="level3" data-number="1.2.1">
-<h3 data-number="1.2.1" class="anchored" data-anchor-id="transition-probabilities"><span class="header-section-number">1.2.1</span> Transition probabilities</h3>
+<section id="transition-probabilities" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1" class="anchored" data-anchor-id="transition-probabilities"><span class="header-section-number">1.3.1</span> Transition probabilities</h3>
 <p>Let’s consider the following notations:</p>
-<p>For all iterations (i.e.&nbsp;for all values of <span class="math inline">\(k\)</span>), the probabilities of a **transition from a hidden state to another} are:</p>
+<p>For all iterations (i.e.&nbsp;for all values of <span class="math inline">\(k\)</span>), the probabilities of a <strong>transition from a hidden state to another</strong> are:</p>
 <ul>
 <li><span class="math inline">\(p_{AB}=pr(S_k=B/S_{k-1}=A)\)</span> is the probability that the operator changes from bag A to bag B</li>
 <li><span class="math inline">\(p_{AA}=pr(S_k=A/S_{k-1}=A)\)</span> is the probability that the operator keeps bag A</li>
@@ -286,9 +298,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 T=\{t_{ij}\}_{(i,j)\in \Omega_S^2}=pr(S_k=j|S_{k-1}=i)
 \]</span></p>
 </section>
-<section id="emission-probabilities" class="level3" data-number="1.2.2">
-<h3 data-number="1.2.2" class="anchored" data-anchor-id="emission-probabilities"><span class="header-section-number">1.2.2</span> Emission probabilities</h3>
-<p>For all iterations (i.e.&nbsp;for all values of <span class="math inline">\(k\)</span>), the probabilities of the **outcomes conditional on hidden state} are:</p>
+<section id="emission-probabilities" class="level3" data-number="1.3.2">
+<h3 data-number="1.3.2" class="anchored" data-anchor-id="emission-probabilities"><span class="header-section-number">1.3.2</span> Emission probabilities</h3>
+<p>For all iterations (i.e.&nbsp;for all values of <span class="math inline">\(k\)</span>), the probabilities of the <strong>outcomes conditional on hidden state</strong> are:</p>
 <ul>
 <li><span class="math inline">\(p_{AW}=pr(X_k=W/S_k=A)\)</span> is the probability of drawing a white ball from bag A</li>
 <li><span class="math inline">\(p_{AR}=pr(X_k=R/S_k=A)\)</span> is the probability of drawing a red ball from bag A</li>
@@ -317,23 +329,23 @@ T=\{t_{ij}\}_{(i,j)\in \Omega_S^2}=pr(S_k=j|S_{k-1}=i)
 </tr>
 </tbody>
 </table>
-<p>**Generalization</p>
+<p><strong>Generalization</strong></p>
 <p>Let <span class="math inline">\(X_k\)</span> be a discrete observed random variable with sample space (i.e.&nbsp;set of all <span class="math inline">\(n_X\)</span> possible outcomes) <span class="math inline">\(\Omega_X\)</span>.</p>
 <p>The probability of a certain outcome <span class="math inline">\(l\)</span> at time <span class="math inline">\(k\)</span> given the state at that same time is <span class="math inline">\(i\)</span> is given by matrix:</p>
 <p><span class="math display">\[
 E=\{e_{il}\}_{(i,l)\in \Omega_S\times\Omega_X}=pr(X_k=l|S_k=i)
 \]</span></p>
 </section>
-<section id="initial-state-distribution" class="level3" data-number="1.2.3">
-<h3 data-number="1.2.3" class="anchored" data-anchor-id="initial-state-distribution"><span class="header-section-number">1.2.3</span> Initial state distribution</h3>
+<section id="initial-state-distribution" class="level3" data-number="1.3.3">
+<h3 data-number="1.3.3" class="anchored" data-anchor-id="initial-state-distribution"><span class="header-section-number">1.3.3</span> Initial state distribution</h3>
 <p>The initial state distribution (i.e.&nbsp;probabilities of being in state i when <span class="math inline">\(k=1\)</span>) is given by</p>
 <p><span class="math display">\[
 \pi_i=pr(S_1 = i).
 \]</span></p>
 <p>We use the notation <span class="math inline">\(\pi=(\pi_1,\pi_2,...\pi_{n_X})\)</span></p>
 </section>
-<section id="parameters-of-a-hmm" class="level3" data-number="1.2.4">
-<h3 data-number="1.2.4" class="anchored" data-anchor-id="parameters-of-a-hmm"><span class="header-section-number">1.2.4</span> Parameters of a HMM</h3>
+<section id="parameters-of-a-hmm" class="level3" data-number="1.3.4">
+<h3 data-number="1.3.4" class="anchored" data-anchor-id="parameters-of-a-hmm"><span class="header-section-number">1.3.4</span> Parameters of a HMM</h3>
 <p>Finally, a hidden Markov model can be fully described by the set of parameters <span class="math inline">\(\theta = (T,E,\pi)\)</span> where</p>
 <ul>
 <li><span class="math inline">\(T\)</span> corresponds to the transition probabilities,</li>
@@ -342,18 +354,18 @@ E=\{e_{il}\}_{(i,l)\in \Omega_S\times\Omega_X}=pr(X_k=l|S_k=i)
 </ul>
 </section>
 </section>
-<section id="questions-associated-to-a-hmm" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="questions-associated-to-a-hmm"><span class="header-section-number">1.3</span> Questions associated to a HMM</h2>
+<section id="questions-associated-to-a-hmm" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="questions-associated-to-a-hmm"><span class="header-section-number">1.4</span> Questions associated to a HMM</h2>
 <p>A HMM user typically searches answers to the following questions:</p>
 <ul>
 <li>What are the characteristics of states, which optimally describe the series of observations?</li>
 <li>What is the most probable series of hidden states considering the series of observations?</li>
 </ul>
-<p>Answering the first question consists in fitting the model, i.e.&nbsp;estimating its parameters (emission and transition probabilities). This will be the focus of section <span class="math inline">\(\ref{baumwelch}\)</span>.</p>
-<p>Answering the second one consists in calculating the most likely series of hidden states (based on both observation series and fitted model). This will be the focus of section <span class="math inline">\(\ref{viterbi}\)</span>.</p>
+<p>Answering the first question consists in fitting the model, i.e.&nbsp;estimating its parameters (emission and transition probabilities). This will be the focus of section <a href="fitting.html"><span>Chapter&nbsp;2</span></a>.</p>
+<p>Answering the second one consists in calculating the most likely series of hidden states (based on both observation series and fitted model). This will be the focus of section <a href="hidden_states.html"><span>Chapter&nbsp;3</span></a>.</p>
 </section>
-<section id="a-practical-example-the-wood-occurrence-series" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="a-practical-example-the-wood-occurrence-series"><span class="header-section-number">1.4</span> A practical example: the wood occurrence series</h2>
+<section id="a-practical-example-the-wood-occurrence-series" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="a-practical-example-the-wood-occurrence-series"><span class="header-section-number">1.5</span> A practical example: the wood occurrence series</h2>
 <p>Let’s consider a spatial series consisting of occurrence of wood rafts along a river. Each data sample corresponds to a 500 meters-long section of the river.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>wood<span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"data/wood.csv"</span>, <span class="at">sep=</span><span class="st">";"</span>, <span class="at">header=</span>T)</span>
